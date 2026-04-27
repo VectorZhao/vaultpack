@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel narrow">
+  <h1>登录</h1>
+  <form method="post" class="form">
+    <label>账号<input name="username" autocomplete="username" required></label>
+    <label>密码<input name="password" type="password" autocomplete="current-password" required></label>
+    <label>二次验证码<input name="token" inputmode="numeric" autocomplete="one-time-code" placeholder="未启用可留空"></label>
+    <button class="primary">登录</button>
+  </form>
+</section>
+{% endblock %}

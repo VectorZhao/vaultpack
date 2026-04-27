@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebDAV Backup</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app-backdrop" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}"><span class="brand-mark"></span>WebDAV Backup</a>
+    {% if session.get("user_id") %}
+      <nav>
+        <a class="{{ 'active' if request.endpoint in ['index', 'job_new', 'job_create', 'job_edit', 'job_update', 'job_run', 'job_delete'] else '' }}" href="{{ url_for('index') }}">任务</a>
+        <a class="{{ 'active' if request.endpoint in ['webdav', 'webdav_post', 'webdav_test'] else '' }}" href="{{ url_for('webdav') }}">WebDAV</a>
+        <a class="{{ 'active' if request.endpoint in ['account', 'account_password', 'account_totp_enable', 'account_totp_disable'] else '' }}" href="{{ url_for('account') }}">账号</a>
+        <form method="post" action="{{ url_for('logout') }}"><button>退出</button></form>
+      </nav>
+    {% endif %}
+  </header>
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-list">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,15 @@
+services:
+  webdav-backup:
+    build: .
+    container_name: webdav-backup
+    restart: unless-stopped
+    ports:
+      - "18080:8080"
+    environment:
+      BACKUP_SECRET_KEY: "change-this-secret"
+      BACKUP_DATA_DIR: "/data"
+      BACKUP_SOURCE_ROOT: "/backup-source"
+      TZ: "Asia/Macau"
+    volumes:
+      - ./data:/data
+      - /path/to/your/server/folder:/backup-source:ro

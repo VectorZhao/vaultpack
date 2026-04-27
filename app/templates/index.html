@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <h1>备份任务</h1>
+    <p>挂载根目录：{{ source_root }}</p>
+  </div>
+  <a class="button primary" href="{{ url_for('job_new') }}">新建任务</a>
+</div>
+
+{% if not cfg %}
+  <div class="notice">尚未配置 WebDAV，任务无法上传。请先进入 WebDAV 页面填写连接信息。</div>
+{% endif %}
+
+<section class="table-panel">
+  <table>
+    <thead>
+      <tr><th>名称</th><th>目录</th><th>周期</th><th>保留</th><th>状态</th><th>下次运行</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+      {% for job in jobs %}
+      <tr>
+        <td>{{ job.name }}</td>
+        <td>{{ job.source_path|source_paths }}</td>
+        <td>{{ job.interval_days }} 天</td>
+        <td>{{ job.retention_count }} 个版本</td>
+        <td><span class="status {{ job.last_status or 'idle' }}">{{ job.last_status or "未运行" }}</span></td>
+        <td>{{ job.next_run_at|time }}</td>
+        <td class="actions">
+          <a href="{{ url_for('job_edit', job_id=job.id) }}">编辑</a>
+          <form method="post" action="{{ url_for('job_run', job_id=job.id) }}"><button>立即备份</button></form>
+          <form method="post" action="{{ url_for('job_delete', job_id=job.id) }}" onsubmit="return confirm('删除这个任务？')"><button class="danger">删除</button></form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="empty">还没有备份任务。</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="table-panel">
+  <h2>最近运行</h2>
+  <table>
+    <thead><tr><th>任务</th><th>开始</th><th>结束</th><th>状态</th><th>信息</th></tr></thead>
+    <tbody>
+      {% for run in runs %}
+      <tr>
+        <td>{{ run.job_name }}</td>
+        <td>{{ run.started_at|time }}</td>
+        <td>{{ run.finished_at|time }}</td>
+        <td><span class="status {{ run.status }}">{{ run.status }}</span></td>
+        <td>{{ run.message or run.archive_name or "-" }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="empty">暂无运行记录。</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

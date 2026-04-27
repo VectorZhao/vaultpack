@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <h1>账号安全</h1>
+  <div class="split">
+    <form method="post" action="{{ url_for('account_password') }}" class="form">
+      <h2>修改密码</h2>
+      <label>当前密码<input name="current_password" type="password" required></label>
+      <label>新密码<input name="new_password" type="password" minlength="8" required></label>
+      <button class="primary">更新密码</button>
+    </form>
+    <div>
+      <h2>二次验证</h2>
+      {% if user.totp_enabled %}
+        <p>当前已启用。</p>
+        <form method="post" action="{{ url_for('account_totp_disable') }}" class="form">
+          <label>验证码<input name="token" inputmode="numeric" required></label>
+          <button class="danger">关闭二次验证</button>
+        </form>
+      {% else %}
+        <p>使用认证器应用扫描二维码，然后输入 6 位验证码启用。</p>
+        <img class="qr" src="{{ qr_data }}" alt="TOTP QR Code">
+        <form method="post" action="{{ url_for('account_totp_enable') }}" class="form">
+          <input type="hidden" name="secret" value="{{ secret }}">
+          <label>密钥<input value="{{ secret }}" readonly></label>
+          <label>验证码<input name="token" inputmode="numeric" required></label>
+          <button class="primary">启用二次验证</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel narrow">
+  <h1>初始化管理员</h1>
+  <form method="post" class="form">
+    <label>账号<input name="username" value="admin" required></label>
+    <label>密码<input name="password" type="password" minlength="8" required></label>
+    <button class="primary">创建账号</button>
+  </form>
+</section>
+{% endblock %}

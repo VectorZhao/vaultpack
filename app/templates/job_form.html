@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <h1>{{ "编辑任务" if job else "新建任务" }}</h1>
+  <div class="split">
+    <form method="post" action="{{ url_for('job_update', job_id=job.id) if job else url_for('job_create') }}" class="form">
+      <label>任务名称<input name="name" value="{{ job.name if job else '' }}" required></label>
+      <input type="hidden" name="source_path" value='{{ selected_paths|tojson }}'>
+      <label>备份目录<input id="source-summary" value="" readonly required></label>
+      <div class="selected-list" id="selected-list"></div>
+      <label>每隔几天备份一次<input name="interval_days" type="number" min="1" value="{{ job.interval_days if job else 7 }}" required></label>
+      <label>保留版本数量<input name="retention_count" type="number" min="1" value="{{ job.retention_count if job else 5 }}" required></label>
+      <label class="check"><input name="enabled" type="checkbox" {% if not job or job.enabled %}checked{% endif %}> 启用任务</label>
+      <button class="primary">{{ "保存" if job else "创建" }}</button>
+    </form>
+    <div class="browser">
+      <h2>选择目录</h2>
+      <div class="tree-toolbar">
+        <span>已选择：<strong id="selected-count">0 个目录</strong></span>
+        <div class="tree-tools">
+          <button type="button" id="collapse-tree">收起全部</button>
+          <button type="button" id="select-root">切换挂载目录</button>
+        </div>
+      </div>
+      <script type="application/json" id="initial-source-paths">{{ selected_paths|tojson }}</script>
+      <div class="tree" id="source-tree">
+        {% set root_entry = browser.entries[0] %}
+        <div class="tree-row selected" data-path="{{ root_entry.path }}" data-loaded="false" data-expanded="false" style="--depth: 0">
+          <button type="button" class="tree-toggle" aria-label="展开"></button>
+          <button type="button" class="tree-name"><span class="folder-icon"></span><span class="name-text">source <span class="muted-path">{{ root_entry.label }}</span></span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  const tree = document.querySelector("#source-tree");
+  const sourceInput = document.querySelector("[name=source_path]");
+  const sourceSummary = document.querySelector("#source-summary");
+  const selectedList = document.querySelector("#selected-list");
+  const selectedCount = document.querySelector("#selected-count");
+  const selectedPaths = new Set(JSON.parse(document.querySelector("#initial-source-paths").textContent || '["."]'));
+
+  function sortedSelected() {
+    return [...selectedPaths].sort((a, b) => a.localeCompare(b));
+  }
+
+  function renderSelected() {
+    const paths = sortedSelected();
+    sourceInput.value = JSON.stringify(paths);
+    sourceSummary.value = paths.length ? paths.join(", ") : "未选择目录";
+    selectedCount.textContent = `${paths.length} 个目录`;
+    selectedList.innerHTML = "";
+    paths.forEach((path) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "selected-chip";
+      chip.dataset.path = path;
+      chip.textContent = path;
+      chip.title = "点击取消选择";
+      chip.setAttribute("aria-label", `取消选择 ${path}`);
+      selectedList.appendChild(chip);
+    });
+    tree.querySelectorAll(".tree-row").forEach((row) => {
+      row.classList.toggle("selected", selectedPaths.has(row.dataset.path));
+    });
+  }
+
+  function toggleSelected(path) {
+    if (selectedPaths.has(path)) {
+      selectedPaths.delete(path);
+    } else {
+      if (path === ".") selectedPaths.clear();
+      if (path !== ".") selectedPaths.delete(".");
+      selectedPaths.add(path);
+    }
+    renderSelected();
+  }
+
+  function childRows(row) {
+    const depth = Number(row.dataset.depth || "0");
+    const rows = [];
+    let cursor = row.nextElementSibling;
+    while (cursor && Number(cursor.dataset.depth || "0") > depth) {
+      rows.push(cursor);
+      cursor = cursor.nextElementSibling;
+    }
+    return rows;
+  }
+
+  function setChildrenVisible(row, visible) {
+    const depth = Number(row.dataset.depth || "0");
+    let cursor = row.nextElementSibling;
+    while (cursor && Number(cursor.dataset.depth || "0") > depth) {
+      const cursorDepth = Number(cursor.dataset.depth || "0");
+      if (cursorDepth === depth + 1) {
+        cursor.hidden = !visible;
+      }
+      if (!visible || cursor.dataset.expanded !== "true") {
+        let nested = cursor.nextElementSibling;
+        while (nested && Number(nested.dataset.depth || "0") > cursorDepth) {
+          nested.hidden = true;
+          nested = nested.nextElementSibling;
+        }
+      }
+      cursor = cursor.nextElementSibling;
+    }
+  }
+
+  async function loadChildren(row) {
+    if (row.dataset.loaded === "true") return;
+    row.classList.add("loading");
+    const response = await fetch(`/api/source-dirs?path=${encodeURIComponent(row.dataset.path)}`);
+    const payload = await response.json();
+    row.classList.remove("loading");
+    if (!response.ok) throw new Error(payload.error || "目录读取失败");
+
+    const depth = Number(row.dataset.depth || "0") + 1;
+    const fragment = document.createDocumentFragment();
+    payload.entries.forEach((entry) => {
+      const child = document.createElement("div");
+      child.className = "tree-row";
+      child.dataset.path = entry.path || ".";
+      child.dataset.loaded = "false";
+      child.dataset.expanded = "false";
+      child.dataset.depth = String(depth);
+      child.style.setProperty("--depth", String(depth));
+      child.hidden = row.dataset.expanded !== "true";
+      child.innerHTML = `
+        <button type="button" class="tree-toggle" aria-label="展开"></button>
+        <button type="button" class="tree-name"><span class="folder-icon"></span><span class="name-text"></span></button>
+      `;
+      child.querySelector(".name-text").textContent = entry.label;
+      if (selectedPaths.has(child.dataset.path)) child.classList.add("selected");
+      fragment.appendChild(child);
+    });
+    row.after(fragment);
+    row.dataset.loaded = "true";
+    if (!payload.entries.length) {
+      row.querySelector(".tree-toggle").textContent = "";
+      row.querySelector(".tree-toggle").disabled = true;
+    }
+  }
+
+  async function toggleRow(row) {
+    const expanded = row.dataset.expanded === "true";
+    if (expanded) {
+      row.dataset.expanded = "false";
+      row.classList.remove("expanded");
+      setChildrenVisible(row, false);
+      return;
+    }
+    row.dataset.expanded = "true";
+    row.classList.add("expanded");
+    await loadChildren(row);
+    setChildrenVisible(row, true);
+  }
+
+  function collapseAll() {
+    tree.querySelectorAll(".tree-row").forEach((row) => {
+      row.dataset.expanded = "false";
+      row.classList.remove("expanded");
+      if (Number(row.dataset.depth || "0") > 0) row.hidden = true;
+    });
+  }
+
+  tree.addEventListener("click", async (event) => {
+    const row = event.target.closest(".tree-row");
+    if (!row) return;
+    if (event.target.closest(".tree-toggle")) {
+      try {
+        await toggleRow(row);
+      } catch (error) {
+        alert(error.message);
+      }
+      return;
+    }
+    toggleSelected(row.dataset.path);
+  });
+
+  selectedList.addEventListener("click", (event) => {
+    const chip = event.target.closest(".selected-chip");
+    if (!chip) return;
+    toggleSelected(chip.dataset.path);
+  });
+
+  document.querySelector("#select-root").addEventListener("click", () => toggleSelected("."));
+  document.querySelector("#collapse-tree").addEventListener("click", collapseAll);
+  renderSelected();
+</script>
+{% endblock %}
