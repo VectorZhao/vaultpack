@@ -464,6 +464,14 @@ button:hover, .button:hover {
 
 .danger { color: var(--danger); }
 .row-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.form-actions form { margin: 0; }
 .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 520px); gap: 26px; align-items: start; }
 
 table {
