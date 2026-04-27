@@ -109,11 +109,11 @@ def create_app():
     def webdav():
         with connect() as conn:
             cfg = conn.execute("SELECT * FROM webdav_config WHERE id = 1").fetchone()
-        return render_template("webdav.html", cfg=cfg, form_title="管理 WebDAV 目的地")
+        return render_template("webdav.html", cfg=cfg, form_title="管理 WebDAV 目的地", is_new=False)
 
     @app.get("/destinations/new/webdav")
     def webdav_new():
-        return render_template("webdav.html", cfg=None, form_title="新建 WebDAV 目的地")
+        return render_template("webdav.html", cfg=None, form_title="新建 WebDAV 目的地", is_new=True)
 
     @app.get("/destinations")
     def destinations():
@@ -131,29 +131,25 @@ def create_app():
 
     @app.post("/webdav")
     def webdav_post():
-        base_url = request.form.get("base_url", "").strip()
-        username = request.form.get("username", "").strip()
-        password = request.form.get("password", "")
-        remote_dir = request.form.get("remote_dir", "/backups").strip() or "/backups"
-        with connect() as conn:
-            existing = conn.execute("SELECT * FROM webdav_config WHERE id = 1").fetchone()
-        if not (base_url and username):
-            flash("WebDAV 地址和账号都需要填写。", "error")
+        result = _save_webdav_config()
+        if isinstance(result, str):
+            flash(result, "error")
             return redirect(url_for("webdav"))
-        if not password and not existing:
-            flash("首次配置 WebDAV 时需要填写密码。", "error")
-            return redirect(url_for("webdav"))
-        if not password and existing:
-            password = existing["password"]
-        with connect() as conn:
-            conn.execute(
-                "INSERT INTO webdav_config(id, base_url, username, password, remote_dir) VALUES(1, ?, ?, ?, ?) "
-                "ON CONFLICT(id) DO UPDATE SET base_url = excluded.base_url, username = excluded.username, "
-                "password = excluded.password, remote_dir = excluded.remote_dir",
-                (base_url, username, password, remote_dir),
-            )
         flash("WebDAV 配置已保存。", "success")
         return redirect(url_for("webdav"))
+
+    @app.post("/destinations/new/webdav")
+    def webdav_new_post():
+        result = _save_webdav_config(require_password=True)
+        if isinstance(result, str):
+            flash(result, "error")
+            return redirect(url_for("webdav_new"))
+        try:
+            WebDAVClient(result).test()
+            flash("WebDAV 目的地已保存，连接测试成功。", "success")
+        except Exception as exc:
+            flash(f"WebDAV 目的地已保存，但连接测试失败：{exc}", "error")
+        return redirect(url_for("destinations"))
 
     @app.post("/webdav/test")
     def webdav_test():
@@ -302,6 +298,29 @@ def _get_webdav_config():
     if not row:
         return None
     return WebDAVConfig(row["base_url"], row["username"], row["password"], row["remote_dir"])
+
+
+def _save_webdav_config(require_password=False):
+    base_url = request.form.get("base_url", "").strip()
+    username = request.form.get("username", "").strip()
+    password = request.form.get("password", "")
+    remote_dir = request.form.get("remote_dir", "/backups").strip() or "/backups"
+    with connect() as conn:
+        existing = conn.execute("SELECT * FROM webdav_config WHERE id = 1").fetchone()
+    if not (base_url and username):
+        return "WebDAV 地址和账号都需要填写。"
+    if not password and (require_password or not existing):
+        return "首次配置 WebDAV 时需要填写密码。"
+    if not password and existing:
+        password = existing["password"]
+    with connect() as conn:
+        conn.execute(
+            "INSERT INTO webdav_config(id, base_url, username, password, remote_dir) VALUES(1, ?, ?, ?, ?) "
+            "ON CONFLICT(id) DO UPDATE SET base_url = excluded.base_url, username = excluded.username, "
+            "password = excluded.password, remote_dir = excluded.remote_dir",
+            (base_url, username, password, remote_dir),
+        )
+    return WebDAVConfig(base_url, username, password, remote_dir)
 
 
 def _job_values():

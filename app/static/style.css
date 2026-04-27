@@ -456,6 +456,12 @@ button:hover, .button:hover {
   color: #fff;
 }
 
+.secondary {
+  background: #f4f5f7;
+  border-color: #d5d9e0;
+  color: #3f4652;
+}
+
 .danger { color: var(--danger); }
 .row-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 520px); gap: 26px; align-items: start; }
