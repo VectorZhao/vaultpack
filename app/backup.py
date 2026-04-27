@@ -1,8 +1,10 @@
 import json
 import shutil
 import tarfile
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
+
+from apscheduler.triggers.cron import CronTrigger
 
 from .config import SOURCE_ROOT, WORK_DIR
 from .db import connect, utc_now_iso
@@ -138,11 +140,11 @@ def run_job(job_id):
 
         message = f"已上传 {archive_name}"
         _finish_run(run_id, "success", message, archive_name)
-        _mark_job(job_id, "success", message, _next_run(job["interval_days"]))
+        _mark_job(job_id, "success", message, next_run_from_cron(job["cron_expr"]))
     except Exception as exc:
         message = str(exc)
         _finish_run(run_id, "failed", message, archive_name)
-        _mark_job(job_id, "failed", message, _next_run(job["interval_days"]))
+        _mark_job(job_id, "failed", message, next_run_from_cron(job["cron_expr"]))
     finally:
         if archive_path and archive_path.exists():
             archive_path.unlink()
@@ -179,8 +181,13 @@ def _apply_retention(client, job_id, retention_count):
         client.delete(name)
 
 
-def _next_run(interval_days):
-    return (datetime.now(timezone.utc) + timedelta(days=interval_days)).replace(microsecond=0).isoformat()
+def next_run_from_cron(cron_expr, base_time=None):
+    base_time = base_time or datetime.now(timezone.utc)
+    trigger = CronTrigger.from_crontab(cron_expr, timezone=timezone.utc)
+    next_run = trigger.get_next_fire_time(None, base_time)
+    if not next_run:
+        raise ValueError("cron 表达式无法计算下次运行时间")
+    return next_run.replace(microsecond=0).isoformat()
 
 
 def _finish_run(run_id, status, message, archive_name):

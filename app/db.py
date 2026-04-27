@@ -2,6 +2,8 @@ import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
 
+from apscheduler.triggers.cron import CronTrigger
+
 from .config import DATA_DIR, DB_PATH
 
 
@@ -32,7 +34,8 @@ CREATE TABLE IF NOT EXISTS jobs (
     name TEXT NOT NULL,
     destination_id INTEGER,
     source_path TEXT NOT NULL,
-    interval_days INTEGER NOT NULL,
+    interval_days INTEGER NOT NULL DEFAULT 1,
+    cron_expr TEXT NOT NULL DEFAULT '0 2 * * *',
     retention_count INTEGER NOT NULL,
     enabled INTEGER NOT NULL DEFAULT 1,
     next_run_at TEXT,
@@ -66,6 +69,8 @@ def init_db():
         conn.executescript(SCHEMA)
         _migrate_webdav_config(conn)
         _migrate_jobs_destination(conn)
+        _migrate_jobs_cron(conn)
+        _refresh_job_next_runs(conn)
 
 
 def _migrate_webdav_config(conn):
@@ -116,6 +121,32 @@ def _migrate_jobs_destination(conn):
     default_destination = conn.execute("SELECT id FROM webdav_config ORDER BY id LIMIT 1").fetchone()
     if default_destination:
         conn.execute("UPDATE jobs SET destination_id = ? WHERE destination_id IS NULL", (default_destination["id"],))
+
+
+def _migrate_jobs_cron(conn):
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(jobs)").fetchall()}
+    if "cron_expr" in columns:
+        return
+    conn.execute("ALTER TABLE jobs ADD COLUMN cron_expr TEXT NOT NULL DEFAULT '0 2 * * *'")
+    for job in conn.execute("SELECT id, interval_days FROM jobs").fetchall():
+        interval_days = max(1, int(job["interval_days"] or 1))
+        cron_expr = "0 2 * * *" if interval_days == 1 else f"0 2 */{interval_days} * *"
+        conn.execute("UPDATE jobs SET cron_expr = ? WHERE id = ?", (cron_expr, job["id"]))
+
+
+def _refresh_job_next_runs(conn):
+    now = datetime.now(timezone.utc)
+    for job in conn.execute("SELECT id, cron_expr FROM jobs WHERE enabled = 1").fetchall():
+        try:
+            trigger = CronTrigger.from_crontab(job["cron_expr"], timezone=timezone.utc)
+            next_run = trigger.get_next_fire_time(None, now)
+        except Exception:
+            continue
+        if next_run:
+            conn.execute(
+                "UPDATE jobs SET next_run_at = ? WHERE id = ?",
+                (next_run.replace(microsecond=0).isoformat(), job["id"]),
+            )
 
 
 @contextmanager

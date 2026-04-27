@@ -11,6 +11,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from .backup import (
     format_source_paths,
     list_source_dirs,
+    next_run_from_cron,
     normalize_source_paths,
     parse_source_paths,
     run_due_jobs,
@@ -214,9 +215,19 @@ def create_app():
             return redirect(url_for("job_new", path=request.form.get("source_path", "")))
         with connect() as conn:
             conn.execute(
-                "INSERT INTO jobs(name, destination_id, source_path, interval_days, retention_count, enabled, next_run_at, created_at) "
-                "VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
-                (*values, request.form.get("enabled") == "on", utc_now_iso(), utc_now_iso()),
+                "INSERT INTO jobs(name, destination_id, source_path, interval_days, cron_expr, retention_count, enabled, next_run_at, created_at) "
+                "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    values[0],
+                    values[1],
+                    values[2],
+                    1,
+                    values[3],
+                    values[4],
+                    request.form.get("enabled") == "on",
+                    next_run_from_cron(values[3]),
+                    utc_now_iso(),
+                ),
             )
         flash("备份任务已创建。", "success")
         return redirect(url_for("index"))
@@ -244,9 +255,9 @@ def create_app():
             return redirect(url_for("job_edit", job_id=job_id, path=request.form.get("source_path", "")))
         with connect() as conn:
             conn.execute(
-                "UPDATE jobs SET name = ?, destination_id = ?, source_path = ?, interval_days = ?, retention_count = ?, "
-                "enabled = ? WHERE id = ?",
-                (*values, request.form.get("enabled") == "on", job_id),
+                "UPDATE jobs SET name = ?, destination_id = ?, source_path = ?, cron_expr = ?, retention_count = ?, "
+                "enabled = ?, next_run_at = ? WHERE id = ?",
+                (*values, request.form.get("enabled") == "on", next_run_from_cron(values[3]), job_id),
             )
         flash("备份任务已更新。", "success")
         return redirect(url_for("index"))
@@ -392,7 +403,7 @@ def _job_values():
     try:
         name = request.form.get("name", "").strip()
         source_paths = normalize_source_paths(parse_source_paths(request.form.get("source_path", "")))
-        interval_days = int(request.form.get("interval_days", "7"))
+        cron_expr = " ".join(request.form.get("cron_expr", "").split())
         retention_count = int(request.form.get("retention_count", "5"))
     except Exception as exc:
         return str(exc)
@@ -406,11 +417,15 @@ def _job_values():
         return "请选择有效的存储目的地。"
     if not source_paths:
         return "至少需要选择一个备份目录。"
-    if interval_days < 1:
-        return "备份间隔至少为 1 天。"
+    if not cron_expr:
+        return "备份时间不能为空，请填写 cron 表达式。"
+    try:
+        next_run_from_cron(cron_expr)
+    except Exception as exc:
+        return f"cron 表达式无效：{exc}"
     if retention_count < 1:
         return "保留版本至少为 1 个。"
-    return name, destination_id, serialize_source_paths(source_paths), interval_days, retention_count
+    return name, destination_id, serialize_source_paths(source_paths), cron_expr, retention_count
 
 
 def _qr_data_uri(uri):
