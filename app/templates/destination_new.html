@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="destination-picker">
+  <a class="back-button" href="{{ url_for('destinations') }}">←</a>
+  <div class="picker-card">
+    <h1>New Destination</h1>
+    <input class="destination-search" placeholder="Search for destination..." aria-label="Search for destination">
+    <a class="provider-option" href="{{ url_for('webdav') }}">
+      <span class="provider-icon webdav-provider">WebDAV</span>
+      <span>
+        <strong>WebDAV</strong>
+        <small>Store backups in any WebDAV compatible storage.</small>
+      </span>
+      <span class="choose-button">Choose -></span>
+    </a>
+  </div>
+</section>
+{% endblock %}

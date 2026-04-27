@@ -1,7 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
+<section class="home-actions">
+  <a class="home-action-card" href="{{ url_for('job_new') }}">
+    <span class="action-icon backup-action"></span>
+    <span>
+      <strong>Backups</strong>
+      <small>Keep your data safe at your chosen destination.</small>
+    </span>
+    <span class="button">Create +</span>
+  </a>
+  <a class="home-action-card" href="{{ url_for('restore') }}">
+    <span class="action-icon restore-action"></span>
+    <span>
+      <strong>Restores</strong>
+      <small>Recover your files from any backup set.</small>
+    </span>
+    <span class="button">Start -></span>
+  </a>
+</section>
+
 <section class="dashboard-head">
-  <h1>备份任务</h1>
+  <h1>My backups</h1>
   <p>挂载根目录：{{ source_root }}</p>
   <a class="button primary create-job" href="{{ url_for('job_new') }}">新建任务</a>
 </section>

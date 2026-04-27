@@ -111,6 +111,20 @@ def create_app():
             cfg = conn.execute("SELECT * FROM webdav_config WHERE id = 1").fetchone()
         return render_template("webdav.html", cfg=cfg)
 
+    @app.get("/destinations")
+    def destinations():
+        with connect() as conn:
+            cfg = conn.execute("SELECT * FROM webdav_config WHERE id = 1").fetchone()
+        return render_template("destinations.html", cfg=cfg)
+
+    @app.get("/destinations/new")
+    def destination_new():
+        return render_template("destination_new.html")
+
+    @app.get("/restore")
+    def restore():
+        return render_template("placeholder.html", title="Restore", message="恢复功能将在后续版本加入。")
+
     @app.post("/webdav")
     def webdav_post():
         base_url = request.form.get("base_url", "").strip()

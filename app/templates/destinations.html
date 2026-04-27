@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="destination-page">
+  <h1>Destinations</h1>
+
+  <a class="destination-add" href="{{ url_for('destination_new') }}">
+    <span class="plus-icon"></span>
+    <span>
+      <strong>Add new destination</strong>
+      <small>Configure a new storage location.</small>
+    </span>
+  </a>
+
+  <div class="section-divider"><span>Or manage your saved destinations</span></div>
+
+  <div class="destination-card">
+    <div class="provider-logo webdav-logo">WebDAV</div>
+    <div>
+      <h2>WebDAV #1</h2>
+      {% if cfg %}
+        <p>{{ cfg.base_url.rstrip("/") }}/{{ cfg.remote_dir.strip("/") }}</p>
+      {% else %}
+        <p>Not configured yet.</p>
+      {% endif %}
+    </div>
+    <a class="button" href="{{ url_for('webdav') }}">Manage -></a>
+  </div>
+</section>
+{% endblock %}
