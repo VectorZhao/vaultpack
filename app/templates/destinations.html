@@ -20,7 +20,23 @@
         <h2>WebDAV #{{ cfg.id }}</h2>
         <p>{{ cfg.base_url.rstrip("/") }}/{{ cfg.remote_dir.strip("/") }}</p>
       </div>
-      <a class="button" href="{{ url_for('webdav_detail', config_id=cfg.id) }}">管理 -></a>
+      <div class="destination-actions">
+        <button class="icon-button danger-icon-button" type="button" title="删除" aria-label="删除 WebDAV #{{ cfg.id }}" onclick="document.querySelector('#delete-destination-{{ cfg.id }}').showModal()">
+          <span class="trash-icon"></span>
+        </button>
+        <a class="button" href="{{ url_for('webdav_detail', config_id=cfg.id) }}">管理 -></a>
+      </div>
+      <dialog class="confirm-dialog" id="delete-destination-{{ cfg.id }}">
+        <form method="dialog" class="confirm-card">
+          <h2>删除 WebDAV #{{ cfg.id }}？</h2>
+          <p>删除后不能继续使用这个存储目的地。正在使用它的备份任务会阻止删除。</p>
+          <div class="confirm-actions">
+            <button class="secondary" value="cancel">否</button>
+            <button class="danger-confirm" value="confirm" form="delete-destination-form-{{ cfg.id }}">是</button>
+          </div>
+        </form>
+        <form id="delete-destination-form-{{ cfg.id }}" method="post" action="{{ url_for('webdav_delete', config_id=cfg.id) }}"></form>
+      </dialog>
     </div>
   {% else %}
     <div class="empty-state">还没有保存的存储目的地。</div>

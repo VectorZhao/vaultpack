@@ -170,6 +170,23 @@ def create_app():
         flash("WebDAV 配置已保存。", "success")
         return redirect(url_for("webdav_detail", config_id=config_id))
 
+    @app.post("/webdav/<int:config_id>/delete")
+    def webdav_delete(config_id):
+        with connect() as conn:
+            cfg = conn.execute("SELECT * FROM webdav_config WHERE id = ?", (config_id,)).fetchone()
+            if not cfg:
+                abort(404)
+            used_by = conn.execute(
+                "SELECT COUNT(*) AS count FROM jobs WHERE destination_id = ?",
+                (config_id,),
+            ).fetchone()["count"]
+            if used_by:
+                flash(f"WebDAV #{config_id} 正在被 {used_by} 个备份任务使用，不能删除。", "error")
+            else:
+                conn.execute("DELETE FROM webdav_config WHERE id = ?", (config_id,))
+                flash(f"WebDAV #{config_id} 已删除。", "success")
+        return redirect(url_for("destinations"))
+
     @app.post("/destinations/new/webdav")
     def webdav_new_post():
         result = _webdav_config_from_form(require_password=True)

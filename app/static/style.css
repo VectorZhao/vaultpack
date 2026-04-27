@@ -648,6 +648,13 @@ th {
   grid-template-columns: 46px minmax(0, 1fr);
 }
 
+.destination-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.destination-actions .button { white-space: nowrap; }
+
 .destination-add strong,
 .destination-card h2,
 .provider-option strong {
@@ -717,6 +724,102 @@ th {
 .webdav-provider {
   color: #1f2937;
   background: #f2f3f5;
+}
+
+.icon-button {
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+}
+
+.danger-icon-button {
+  color: var(--danger);
+  border-color: #f1c5cc;
+  background: #fff7f8;
+}
+
+.danger-icon-button:hover {
+  border-color: #e58b99;
+  background: #fff0f2;
+}
+
+.trash-icon {
+  width: 17px;
+  height: 18px;
+  position: relative;
+  border: 2px solid currentColor;
+  border-top: 0;
+  border-radius: 0 0 4px 4px;
+}
+
+.trash-icon::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  top: -6px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+.trash-icon::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: -10px;
+  height: 4px;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+}
+
+.confirm-dialog {
+  width: min(420px, calc(100% - 32px));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.24);
+}
+
+.confirm-dialog::backdrop {
+  background: rgba(15, 23, 42, 0.24);
+  backdrop-filter: blur(3px);
+}
+
+.confirm-card {
+  display: grid;
+  gap: 10px;
+  padding: 22px;
+}
+
+.confirm-card h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.confirm-card p {
+  line-height: 1.55;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.danger-confirm {
+  color: #fff;
+  border-color: var(--danger);
+  background: var(--danger);
+}
+
+.danger-confirm:hover {
+  color: #fff;
+  border-color: #bd2f41;
+  background: #bd2f41;
 }
 
 .destination-picker {
@@ -931,6 +1034,12 @@ th {
   .provider-option .choose-button {
     width: 100%;
   }
+  .destination-actions {
+    width: 100%;
+  }
+  .destination-actions .button {
+    flex: 1;
+  }
   .picker-card { padding: 22px; }
   .destination-search { min-width: 0; }
   .table-shell { overflow-x: auto; }
@@ -958,6 +1067,9 @@ th {
   }
   .destination-card .button,
   .provider-option .choose-button {
+    grid-column: 1 / -1;
+  }
+  .destination-actions {
     grid-column: 1 / -1;
   }
 }
