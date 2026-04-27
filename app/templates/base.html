@@ -18,7 +18,7 @@
           <a class="{{ 'active' if request.endpoint == 'index' else '' }}" href="{{ url_for('index') }}"><span class="nav-icon home-icon"></span>首页</a>
           <a class="{{ 'active' if request.endpoint in ['job_new', 'job_create', 'job_edit', 'job_update'] else '' }}" href="{{ url_for('job_new') }}"><span class="nav-icon backup-icon"></span>添加备份</a>
           <a class="{{ 'active' if request.endpoint == 'restore' else '' }}" href="{{ url_for('restore') }}"><span class="nav-icon restore-icon"></span>恢复</a>
-          <a class="{{ 'active' if request.endpoint in ['destinations', 'destination_new', 'webdav_new', 'webdav', 'webdav_post', 'webdav_test'] else '' }}" href="{{ url_for('destinations') }}"><span class="nav-icon link-icon"></span>存储目的地</a>
+          <a class="{{ 'active' if request.endpoint in ['destinations', 'destination_new', 'webdav_new', 'webdav', 'webdav_detail', 'webdav_post', 'webdav_test', 'webdav_test_config'] else '' }}" href="{{ url_for('destinations') }}"><span class="nav-icon link-icon"></span>存储目的地</a>
           <a class="{{ 'active' if request.endpoint in ['account', 'account_password', 'account_totp_enable', 'account_totp_disable'] else '' }}" href="{{ url_for('account') }}"><span class="nav-icon settings-icon"></span>设置</a>
         </nav>
         <div class="sidebar-footer">

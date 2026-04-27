@@ -13,17 +13,17 @@
 
   <div class="section-divider"><span>或管理已保存的存储目的地</span></div>
 
-  <div class="destination-card">
-    <div class="provider-logo webdav-logo">WebDAV</div>
-    <div>
-      <h2>WebDAV #1</h2>
-      {% if cfg %}
+  {% for cfg in configs %}
+    <div class="destination-card">
+      <div class="provider-logo webdav-logo">WebDAV</div>
+      <div>
+        <h2>WebDAV #{{ cfg.id }}</h2>
         <p>{{ cfg.base_url.rstrip("/") }}/{{ cfg.remote_dir.strip("/") }}</p>
-      {% else %}
-        <p>尚未配置。</p>
-      {% endif %}
+      </div>
+      <a class="button" href="{{ url_for('webdav_detail', config_id=cfg.id) }}">管理 -></a>
     </div>
-    <a class="button" href="{{ url_for('webdav') }}">管理 -></a>
-  </div>
+  {% else %}
+    <div class="empty-state">还没有保存的存储目的地。</div>
+  {% endfor %}
 </section>
 {% endblock %}

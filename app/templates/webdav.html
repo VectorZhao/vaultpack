@@ -7,7 +7,7 @@
     请在账户页面启用“外部应用连接”，然后填写页面显示的 WebDAV 连接地址、连接 ID 和应用密码。
     如果使用备份区域地址，通常应把 WebDAV 地址填写为包含 <code>/backup</code> 的地址，远端目录只填其下级目录。
   </div>
-  <form method="post" action="{{ url_for('webdav_new_post') if is_new else url_for('webdav_post') }}" class="form">
+  <form method="post" action="{{ url_for('webdav_new_post') if is_new else url_for('webdav_post', config_id=cfg.id) }}" class="form">
     <label>WebDAV 地址<input name="base_url" value="{{ cfg.base_url if cfg else '' }}" placeholder="https://example.com/dav" required></label>
     <label>账号<input name="username" value="{{ cfg.username if cfg else '' }}" required></label>
     <label>密码<input name="password" type="password" placeholder="{{ '留空表示不修改已保存密码' if cfg else '' }}" {% if not cfg %}required{% endif %}></label>
@@ -22,7 +22,7 @@
     </div>
   </form>
   {% if cfg %}
-    <form method="post" action="{{ url_for('webdav_test') }}" class="inline-form">
+    <form method="post" action="{{ url_for('webdav_test_config', config_id=cfg.id) }}" class="inline-form">
       <button>测试连接</button>
     </form>
   {% endif %}

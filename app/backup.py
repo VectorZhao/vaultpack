@@ -105,7 +105,7 @@ def due_jobs():
 def run_job(job_id):
     with connect() as conn:
         job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
-        cfg = conn.execute("SELECT * FROM webdav_config WHERE id = 1").fetchone()
+        cfg = conn.execute("SELECT * FROM webdav_config ORDER BY id LIMIT 1").fetchone()
     if not job:
         return
     if not cfg:

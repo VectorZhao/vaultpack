@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS webdav_config (
-    id INTEGER PRIMARY KEY CHECK (id = 1),
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     base_url TEXT NOT NULL,
     username TEXT NOT NULL,
     password TEXT NOT NULL,
@@ -62,6 +62,47 @@ def init_db():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     with connect() as conn:
         conn.executescript(SCHEMA)
+        _migrate_webdav_config(conn)
+
+
+def _migrate_webdav_config(conn):
+    row = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'webdav_config'"
+    ).fetchone()
+    if not row:
+        return
+    table_sql = row["sql"] or ""
+    if "CHECK (id = 1)" not in table_sql and "CHECK(id = 1)" not in table_sql:
+        return
+
+    existing = conn.execute(
+        "SELECT base_url, username, password, remote_dir FROM webdav_config ORDER BY id"
+    ).fetchall()
+    backup_name = "webdav_config_legacy"
+    suffix = 1
+    while conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", (backup_name,)
+    ).fetchone():
+        suffix += 1
+        backup_name = f"webdav_config_legacy_{suffix}"
+
+    conn.execute(f"ALTER TABLE webdav_config RENAME TO {backup_name}")
+    conn.execute(
+        """
+        CREATE TABLE webdav_config (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            base_url TEXT NOT NULL,
+            username TEXT NOT NULL,
+            password TEXT NOT NULL,
+            remote_dir TEXT NOT NULL DEFAULT '/backups'
+        )
+        """
+    )
+    for cfg in existing:
+        conn.execute(
+            "INSERT INTO webdav_config(base_url, username, password, remote_dir) VALUES(?, ?, ?, ?)",
+            (cfg["base_url"], cfg["username"], cfg["password"], cfg["remote_dir"]),
+        )
 
 
 @contextmanager
