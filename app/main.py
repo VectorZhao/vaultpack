@@ -1,6 +1,7 @@
 import base64
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
+from threading import Thread
 
 import pyotp
 import qrcode
@@ -9,6 +10,7 @@ from flask import Flask, abort, flash, jsonify, redirect, render_template, reque
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .backup import (
+    create_pending_run,
     format_source_paths,
     list_source_dirs,
     next_run_from_cron,
@@ -30,6 +32,7 @@ def create_app():
     app.permanent_session_lifetime = timedelta(days=7)
     app.jinja_env.filters["time"] = format_time
     app.jinja_env.filters["source_paths"] = format_source_paths
+    app.jinja_env.filters["progress_percent"] = progress_percent
 
     scheduler = BackgroundScheduler(daemon=True)
     scheduler.add_job(run_due_jobs, "interval", minutes=1, id="run_due_jobs", replace_existing=True)
@@ -109,7 +112,21 @@ def create_app():
                 "SELECT runs.*, jobs.name AS job_name FROM runs JOIN jobs ON jobs.id = runs.job_id "
                 "ORDER BY runs.id DESC LIMIT 20"
             ).fetchall()
-        return render_template("index.html", jobs=jobs, cfg=cfg, runs=runs, source_root=SOURCE_ROOT)
+            running_runs = conn.execute(
+                "SELECT runs.*, jobs.name AS job_name FROM runs JOIN jobs ON jobs.id = runs.job_id "
+                "WHERE runs.status = 'running' ORDER BY runs.started_at DESC"
+            ).fetchall()
+        running_by_job = {run["job_id"]: run for run in running_runs}
+        active_run = running_runs[0] if running_runs else None
+        return render_template(
+            "index.html",
+            jobs=jobs,
+            cfg=cfg,
+            runs=runs,
+            running_by_job=running_by_job,
+            active_run=active_run,
+            source_root=SOURCE_ROOT,
+        )
 
     @app.get("/webdav")
     def webdav():
@@ -264,8 +281,19 @@ def create_app():
 
     @app.post("/jobs/<int:job_id>/run")
     def job_run(job_id):
-        run_job(job_id)
-        flash("手动备份已执行，请查看运行记录。", "success")
+        if not _get_job(job_id):
+            abort(404)
+        with connect() as conn:
+            running = conn.execute(
+                "SELECT 1 FROM runs WHERE job_id = ? AND status = 'running' LIMIT 1",
+                (job_id,),
+            ).fetchone()
+        if running:
+            flash("这个任务已经在运行中。", "error")
+        else:
+            run_id = create_pending_run(job_id)
+            Thread(target=run_job, args=(job_id, run_id), daemon=True).start()
+            flash("手动备份已开始，请查看进度。", "success")
         return redirect(url_for("index"))
 
     @app.post("/jobs/<int:job_id>/delete")
@@ -446,3 +474,9 @@ def format_time(value):
         return dt.strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return value
+
+
+def progress_percent(run):
+    if not run or not run["progress_total"]:
+        return 0
+    return max(0, min(100, round((run["progress_current"] / run["progress_total"]) * 100)))

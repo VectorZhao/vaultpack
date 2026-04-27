@@ -53,6 +53,9 @@ CREATE TABLE IF NOT EXISTS runs (
     finished_at TEXT,
     status TEXT NOT NULL,
     message TEXT,
+    progress_current INTEGER NOT NULL DEFAULT 0,
+    progress_total INTEGER NOT NULL DEFAULT 0,
+    progress_label TEXT,
     archive_name TEXT,
     FOREIGN KEY(job_id) REFERENCES jobs(id) ON DELETE CASCADE
 );
@@ -70,6 +73,7 @@ def init_db():
         _migrate_webdav_config(conn)
         _migrate_jobs_destination(conn)
         _migrate_jobs_cron(conn)
+        _migrate_run_progress(conn)
         _refresh_job_next_runs(conn)
 
 
@@ -147,6 +151,16 @@ def _refresh_job_next_runs(conn):
                 "UPDATE jobs SET next_run_at = ? WHERE id = ?",
                 (next_run.replace(microsecond=0).isoformat(), job["id"]),
             )
+
+
+def _migrate_run_progress(conn):
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(runs)").fetchall()}
+    if "progress_current" not in columns:
+        conn.execute("ALTER TABLE runs ADD COLUMN progress_current INTEGER NOT NULL DEFAULT 0")
+    if "progress_total" not in columns:
+        conn.execute("ALTER TABLE runs ADD COLUMN progress_total INTEGER NOT NULL DEFAULT 0")
+    if "progress_label" not in columns:
+        conn.execute("ALTER TABLE runs ADD COLUMN progress_label TEXT")
 
 
 @contextmanager

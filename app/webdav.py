@@ -49,10 +49,13 @@ class WebDAVClient:
             if response.status_code not in (201, 405):
                 response.raise_for_status()
 
-    def upload_file(self, local_path, remote_name):
+    def upload_file(self, local_path, remote_name, progress_callback=None):
         self.ensure_remote_dir()
         with open(local_path, "rb") as handle:
-            response = self.session.put(self._url(remote_name), data=handle, timeout=None)
+            total = local_path.stat().st_size
+            body = _ProgressReader(handle, total, progress_callback) if progress_callback else handle
+            headers = {"Content-Length": str(total)}
+            response = self.session.put(self._url(remote_name), data=body, headers=headers, timeout=None)
         response.raise_for_status()
 
     def delete(self, remote_name):
@@ -81,3 +84,18 @@ def _parse_propfind(xml_text):
         if name:
             files.append(name)
     return files
+
+
+class _ProgressReader:
+    def __init__(self, handle, total, callback):
+        self.handle = handle
+        self.total = total
+        self.callback = callback
+        self.sent = 0
+
+    def read(self, size=-1):
+        chunk = self.handle.read(size)
+        if chunk:
+            self.sent += len(chunk)
+            self.callback(self.sent, self.total)
+        return chunk
