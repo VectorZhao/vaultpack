@@ -105,11 +105,15 @@ def due_jobs():
 def run_job(job_id):
     with connect() as conn:
         job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
-        cfg = conn.execute("SELECT * FROM webdav_config ORDER BY id LIMIT 1").fetchone()
+        cfg = None
+        if job and job["destination_id"]:
+            cfg = conn.execute("SELECT * FROM webdav_config WHERE id = ?", (job["destination_id"],)).fetchone()
+        if job and not job["destination_id"]:
+            cfg = conn.execute("SELECT * FROM webdav_config ORDER BY id LIMIT 1").fetchone()
     if not job:
         return
     if not cfg:
-        _mark_job(job_id, "failed", "尚未配置 WebDAV", None)
+        _mark_job(job_id, "failed", "任务选择的存储目的地不存在", None)
         return
 
     started_at = utc_now_iso()

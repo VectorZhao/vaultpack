@@ -25,13 +25,20 @@
   <div class="table-shell">
     <table class="job-table">
     <thead>
-      <tr><th>名称</th><th>目录</th><th>周期</th><th>保留</th><th>状态</th><th></th></tr>
+      <tr><th>名称</th><th>目录</th><th>目的地</th><th>周期</th><th>保留</th><th>状态</th><th></th></tr>
     </thead>
     <tbody>
       {% for job in jobs %}
       <tr>
         <td class="job-name">{{ job.name }}</td>
         <td class="path-cell">{{ job.source_path|source_paths }}</td>
+        <td>
+          {% if job.destination_base_url %}
+            WebDAV #{{ job.destination_id }}
+          {% else %}
+            <span class="status failed">未配置</span>
+          {% endif %}
+        </td>
         <td>{{ job.interval_days }} 天</td>
         <td>{{ job.retention_count }} 个版本</td>
         <td><span class="status {{ job.last_status or 'idle' }}">{{ {"success": "成功", "failed": "失败"}.get(job.last_status, "未运行") }}</span></td>
@@ -44,7 +51,7 @@
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="6" class="empty">还没有备份任务。</td></tr>
+      <tr><td colspan="7" class="empty">还没有备份任务。</td></tr>
       {% endfor %}
     </tbody>
     </table>

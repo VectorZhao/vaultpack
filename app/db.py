@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS webdav_config (
 CREATE TABLE IF NOT EXISTS jobs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    destination_id INTEGER,
     source_path TEXT NOT NULL,
     interval_days INTEGER NOT NULL,
     retention_count INTEGER NOT NULL,
@@ -38,7 +39,8 @@ CREATE TABLE IF NOT EXISTS jobs (
     last_run_at TEXT,
     last_status TEXT,
     last_message TEXT,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    FOREIGN KEY(destination_id) REFERENCES webdav_config(id)
 );
 
 CREATE TABLE IF NOT EXISTS runs (
@@ -63,6 +65,7 @@ def init_db():
     with connect() as conn:
         conn.executescript(SCHEMA)
         _migrate_webdav_config(conn)
+        _migrate_jobs_destination(conn)
 
 
 def _migrate_webdav_config(conn):
@@ -103,6 +106,16 @@ def _migrate_webdav_config(conn):
             "INSERT INTO webdav_config(base_url, username, password, remote_dir) VALUES(?, ?, ?, ?)",
             (cfg["base_url"], cfg["username"], cfg["password"], cfg["remote_dir"]),
         )
+
+
+def _migrate_jobs_destination(conn):
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(jobs)").fetchall()}
+    if "destination_id" in columns:
+        return
+    conn.execute("ALTER TABLE jobs ADD COLUMN destination_id INTEGER")
+    default_destination = conn.execute("SELECT id FROM webdav_config ORDER BY id LIMIT 1").fetchone()
+    if default_destination:
+        conn.execute("UPDATE jobs SET destination_id = ? WHERE destination_id IS NULL", (default_destination["id"],))
 
 
 @contextmanager

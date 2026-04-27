@@ -409,7 +409,8 @@ label {
   font-weight: 650;
 }
 
-input {
+input,
+select {
   width: 100%;
   min-height: 42px;
   border: 1px solid var(--line);
@@ -421,12 +422,18 @@ input {
   outline: none;
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
 input[readonly] { color: #0b6f50; }
+button:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
 
 .check { display: flex; align-items: center; gap: 9px; }
 .check input { width: auto; min-height: auto; accent-color: var(--primary); }

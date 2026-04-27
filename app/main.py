@@ -97,7 +97,12 @@ def create_app():
     @app.get("/")
     def index():
         with connect() as conn:
-            jobs = conn.execute("SELECT * FROM jobs ORDER BY id DESC").fetchall()
+            jobs = conn.execute(
+                "SELECT jobs.*, webdav_config.base_url AS destination_base_url, "
+                "webdav_config.remote_dir AS destination_remote_dir "
+                "FROM jobs LEFT JOIN webdav_config ON webdav_config.id = jobs.destination_id "
+                "ORDER BY jobs.id DESC"
+            ).fetchall()
             cfg = conn.execute("SELECT * FROM webdav_config ORDER BY id LIMIT 1").fetchone()
             runs = conn.execute(
                 "SELECT runs.*, jobs.name AS job_name FROM runs JOIN jobs ON jobs.id = runs.job_id "
@@ -190,7 +195,8 @@ def create_app():
     @app.get("/jobs/new")
     def job_new():
         browser = list_source_dirs(None)
-        return render_template("job_form.html", job=None, browser=browser, selected_paths=["."])
+        destinations = _get_webdav_rows()
+        return render_template("job_form.html", job=None, browser=browser, selected_paths=["."], destinations=destinations)
 
     @app.get("/api/source-dirs")
     def api_source_dirs():
@@ -208,8 +214,8 @@ def create_app():
             return redirect(url_for("job_new", path=request.form.get("source_path", "")))
         with connect() as conn:
             conn.execute(
-                "INSERT INTO jobs(name, source_path, interval_days, retention_count, enabled, next_run_at, created_at) "
-                "VALUES(?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO jobs(name, destination_id, source_path, interval_days, retention_count, enabled, next_run_at, created_at) "
+                "VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
                 (*values, request.form.get("enabled") == "on", utc_now_iso(), utc_now_iso()),
             )
         flash("备份任务已创建。", "success")
@@ -221,7 +227,14 @@ def create_app():
         if not job:
             abort(404)
         browser = list_source_dirs(None)
-        return render_template("job_form.html", job=job, browser=browser, selected_paths=parse_source_paths(job["source_path"]))
+        destinations = _get_webdav_rows()
+        return render_template(
+            "job_form.html",
+            job=job,
+            browser=browser,
+            selected_paths=parse_source_paths(job["source_path"]),
+            destinations=destinations,
+        )
 
     @app.post("/jobs/<int:job_id>")
     def job_update(job_id):
@@ -231,7 +244,7 @@ def create_app():
             return redirect(url_for("job_edit", job_id=job_id, path=request.form.get("source_path", "")))
         with connect() as conn:
             conn.execute(
-                "UPDATE jobs SET name = ?, source_path = ?, interval_days = ?, retention_count = ?, "
+                "UPDATE jobs SET name = ?, destination_id = ?, source_path = ?, interval_days = ?, retention_count = ?, "
                 "enabled = ? WHERE id = ?",
                 (*values, request.form.get("enabled") == "on", job_id),
             )
@@ -322,6 +335,11 @@ def _get_webdav_row(config_id=None):
         return conn.execute("SELECT * FROM webdav_config WHERE id = ?", (config_id,)).fetchone()
 
 
+def _get_webdav_rows():
+    with connect() as conn:
+        return conn.execute("SELECT * FROM webdav_config ORDER BY id").fetchall()
+
+
 def _get_webdav_config(config_id=None):
     row = _get_webdav_row(config_id)
     if not row:
@@ -378,15 +396,21 @@ def _job_values():
         retention_count = int(request.form.get("retention_count", "5"))
     except Exception as exc:
         return str(exc)
+    try:
+        destination_id = int(request.form.get("destination_id", "0"))
+    except ValueError:
+        return "请选择有效的存储目的地。"
     if not name:
         return "任务名称不能为空。"
+    if not _get_webdav_row(destination_id):
+        return "请选择有效的存储目的地。"
     if not source_paths:
         return "至少需要选择一个备份目录。"
     if interval_days < 1:
         return "备份间隔至少为 1 天。"
     if retention_count < 1:
         return "保留版本至少为 1 个。"
-    return name, serialize_source_paths(source_paths), interval_days, retention_count
+    return name, destination_id, serialize_source_paths(source_paths), interval_days, retention_count
 
 
 def _qr_data_uri(uri):

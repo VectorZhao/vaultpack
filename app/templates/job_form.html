@@ -5,13 +5,26 @@
   <div class="split">
     <form method="post" action="{{ url_for('job_update', job_id=job.id) if job else url_for('job_create') }}" class="form">
       <label>任务名称<input name="name" value="{{ job.name if job else '' }}" required></label>
+      <label>存储目的地
+        <select name="destination_id" required {% if not destinations %}disabled{% endif %}>
+          {% for destination in destinations %}
+            {% set selected_destination_id = job.destination_id if job and job.destination_id else destinations[0].id %}
+            <option value="{{ destination.id }}" {% if destination.id == selected_destination_id %}selected{% endif %}>
+              WebDAV #{{ destination.id }} - {{ destination.base_url.rstrip("/") }}/{{ destination.remote_dir.strip("/") }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      {% if not destinations %}
+        <div class="notice">还没有可用的存储目的地，请先添加 WebDAV 目的地。</div>
+      {% endif %}
       <input type="hidden" name="source_path" value='{{ selected_paths|tojson }}'>
       <label>备份目录<input id="source-summary" value="" readonly required></label>
       <div class="selected-list" id="selected-list"></div>
       <label>每隔几天备份一次<input name="interval_days" type="number" min="1" value="{{ job.interval_days if job else 7 }}" required></label>
       <label>保留版本数量<input name="retention_count" type="number" min="1" value="{{ job.retention_count if job else 5 }}" required></label>
       <label class="check"><input name="enabled" type="checkbox" {% if not job or job.enabled %}checked{% endif %}> 启用任务</label>
-      <button class="primary">{{ "保存" if job else "创建" }}</button>
+      <button class="primary" {% if not destinations %}disabled{% endif %}>{{ "保存" if job else "创建" }}</button>
     </form>
     <div class="browser">
       <h2>选择目录</h2>
