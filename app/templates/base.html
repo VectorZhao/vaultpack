@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WebDAV Backup</title>
+  <title>vaultpack</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -15,26 +15,26 @@
           <span>vaultpack</span>
         </div>
         <nav class="side-nav">
-          <a class="{{ 'active' if request.endpoint == 'index' else '' }}" href="{{ url_for('index') }}"><span class="nav-icon home-icon"></span>Home</a>
-          <a class="{{ 'active' if request.endpoint in ['job_new', 'job_create', 'job_edit', 'job_update'] else '' }}" href="{{ url_for('job_new') }}"><span class="nav-icon backup-icon"></span>Add backup</a>
-          <a class="{{ 'active' if request.endpoint == 'restore' else '' }}" href="{{ url_for('restore') }}"><span class="nav-icon restore-icon"></span>Restore</a>
-          <a class="{{ 'active' if request.endpoint in ['destinations', 'destination_new', 'webdav', 'webdav_post', 'webdav_test'] else '' }}" href="{{ url_for('destinations') }}"><span class="nav-icon link-icon"></span>Destinations</a>
-          <a class="{{ 'active' if request.endpoint in ['account', 'account_password', 'account_totp_enable', 'account_totp_disable'] else '' }}" href="{{ url_for('account') }}"><span class="nav-icon settings-icon"></span>Settings</a>
+          <a class="{{ 'active' if request.endpoint == 'index' else '' }}" href="{{ url_for('index') }}"><span class="nav-icon home-icon"></span>首页</a>
+          <a class="{{ 'active' if request.endpoint in ['job_new', 'job_create', 'job_edit', 'job_update'] else '' }}" href="{{ url_for('job_new') }}"><span class="nav-icon backup-icon"></span>添加备份</a>
+          <a class="{{ 'active' if request.endpoint == 'restore' else '' }}" href="{{ url_for('restore') }}"><span class="nav-icon restore-icon"></span>恢复</a>
+          <a class="{{ 'active' if request.endpoint in ['destinations', 'destination_new', 'webdav_new', 'webdav', 'webdav_post', 'webdav_test'] else '' }}" href="{{ url_for('destinations') }}"><span class="nav-icon link-icon"></span>存储目的地</a>
+          <a class="{{ 'active' if request.endpoint in ['account', 'account_password', 'account_totp_enable', 'account_totp_disable'] else '' }}" href="{{ url_for('account') }}"><span class="nav-icon settings-icon"></span>设置</a>
         </nav>
         <div class="sidebar-footer">
-          <div class="node-id"><span class="nav-icon monitor-icon"></span>local</div>
-          <a href="https://github.com/VectorZhao/vaultpack" target="_blank" rel="noreferrer"><span class="nav-icon info-icon"></span>About vaultpack</a>
-          <a href="https://github.com/VectorZhao/vaultpack#readme" target="_blank" rel="noreferrer"><span class="nav-icon doc-icon"></span>Documentation</a>
-          <form method="post" action="{{ url_for('logout') }}"><button class="side-logout"><span class="nav-icon logout-icon"></span>Log out</button></form>
+          <div class="node-id"><span class="nav-icon monitor-icon"></span>本机节点</div>
+          <a href="https://github.com/VectorZhao/vaultpack" target="_blank" rel="noreferrer"><span class="nav-icon info-icon"></span>关于 vaultpack</a>
+          <a href="https://github.com/VectorZhao/vaultpack#readme" target="_blank" rel="noreferrer"><span class="nav-icon doc-icon"></span>使用文档</a>
+          <form method="post" action="{{ url_for('logout') }}"><button class="side-logout"><span class="nav-icon logout-icon"></span>退出登录</button></form>
         </div>
       </aside>
       <div class="workspace">
         <header class="topbar">
-          <div class="topbar-title">Backup dashboard</div>
+          <div class="topbar-title">备份控制台</div>
           <div class="topbar-actions">
-            <span>Click to register</span>
+            <span>本地运行</span>
             <span class="dot"></span>
-            <button type="button">Pause</button>
+            <button type="button">暂停</button>
           </div>
         </header>
         <main>

@@ -109,7 +109,11 @@ def create_app():
     def webdav():
         with connect() as conn:
             cfg = conn.execute("SELECT * FROM webdav_config WHERE id = 1").fetchone()
-        return render_template("webdav.html", cfg=cfg)
+        return render_template("webdav.html", cfg=cfg, form_title="管理 WebDAV 目的地")
+
+    @app.get("/destinations/new/webdav")
+    def webdav_new():
+        return render_template("webdav.html", cfg=None, form_title="新建 WebDAV 目的地")
 
     @app.get("/destinations")
     def destinations():
@@ -123,7 +127,7 @@ def create_app():
 
     @app.get("/restore")
     def restore():
-        return render_template("placeholder.html", title="Restore", message="恢复功能将在后续版本加入。")
+        return render_template("placeholder.html", title="恢复", message="恢复功能将在后续版本加入。")
 
     @app.post("/webdav")
     def webdav_post():

@@ -3,15 +3,15 @@
 <section class="destination-picker">
   <a class="back-button" href="{{ url_for('destinations') }}">←</a>
   <div class="picker-card">
-    <h1>New Destination</h1>
-    <input class="destination-search" placeholder="Search for destination..." aria-label="Search for destination">
-    <a class="provider-option" href="{{ url_for('webdav') }}">
+    <h1>新的存储目的地</h1>
+    <input class="destination-search" placeholder="搜索存储类型..." aria-label="搜索存储类型">
+    <a class="provider-option" href="{{ url_for('webdav_new') }}">
       <span class="provider-icon webdav-provider">WebDAV</span>
       <span>
         <strong>WebDAV</strong>
-        <small>Store backups in any WebDAV compatible storage.</small>
+        <small>将备份保存到任何兼容 WebDAV 的存储服务。</small>
       </span>
-      <span class="choose-button">Choose -></span>
+      <span class="choose-button">选择 -></span>
     </a>
   </div>
 </section>

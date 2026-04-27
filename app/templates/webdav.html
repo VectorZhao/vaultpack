@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="panel">
-  <h1>WebDAV 配置</h1>
+  <h1>{{ form_title or "WebDAV 配置" }}</h1>
   <div class="help-box">
     <strong>InfiniCLOUD / TeraCLOUD：</strong>
-    请在 MyPage 启用 External App Connection，然后填写页面显示的 WebDAV 连接 URL、连接 ID 和 App Password。
-    如果使用备份区域 URL，通常应把 WebDAV 地址填写为包含 <code>/backup</code> 的地址，远端目录只填其下级目录。
+    请在账户页面启用“外部应用连接”，然后填写页面显示的 WebDAV 连接地址、连接 ID 和应用密码。
+    如果使用备份区域地址，通常应把 WebDAV 地址填写为包含 <code>/backup</code> 的地址，远端目录只填其下级目录。
   </div>
   <form method="post" class="form">
     <label>WebDAV 地址<input name="base_url" value="{{ cfg.base_url if cfg else '' }}" placeholder="https://example.com/dav" required></label>
@@ -16,8 +16,10 @@
       <button class="primary">保存</button>
     </div>
   </form>
-  <form method="post" action="{{ url_for('webdav_test') }}" class="inline-form">
-    <button>测试连接</button>
-  </form>
+  {% if cfg %}
+    <form method="post" action="{{ url_for('webdav_test') }}" class="inline-form">
+      <button>测试连接</button>
+    </form>
+  {% endif %}
 </section>
 {% endblock %}

@@ -4,23 +4,15 @@
   <a class="home-action-card" href="{{ url_for('job_new') }}">
     <span class="action-icon backup-action"></span>
     <span>
-      <strong>Backups</strong>
-      <small>Keep your data safe at your chosen destination.</small>
+      <strong>备份</strong>
+      <small>将目录压缩并保存到已配置的存储目的地。</small>
     </span>
-    <span class="button">Create +</span>
-  </a>
-  <a class="home-action-card" href="{{ url_for('restore') }}">
-    <span class="action-icon restore-action"></span>
-    <span>
-      <strong>Restores</strong>
-      <small>Recover your files from any backup set.</small>
-    </span>
-    <span class="button">Start -></span>
+    <span class="button">创建 +</span>
   </a>
 </section>
 
 <section class="dashboard-head">
-  <h1>My backups</h1>
+  <h1>我的备份</h1>
   <p>挂载根目录：{{ source_root }}</p>
   <a class="button primary create-job" href="{{ url_for('job_new') }}">新建任务</a>
 </section>
