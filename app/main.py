@@ -343,6 +343,23 @@ def create_app():
             flash("密码已更新。", "success")
         return redirect(url_for("account"))
 
+    @app.post("/account/username")
+    def account_username():
+        user = _get_user()
+        username = request.form.get("username", "").strip()
+        current = request.form.get("current_password", "")
+        if not username:
+            flash("用户名不能为空。", "error")
+        elif len(username) > 64:
+            flash("用户名不能超过 64 个字符。", "error")
+        elif not check_password_hash(user["password_hash"], current):
+            flash("当前密码错误，用户名未更新。", "error")
+        else:
+            with connect() as conn:
+                conn.execute("UPDATE users SET username = ? WHERE id = 1", (username,))
+            flash("用户名已更新。", "success")
+        return redirect(url_for("account"))
+
     @app.post("/account/totp/enable")
     def account_totp_enable():
         secret = request.form.get("secret", "")
