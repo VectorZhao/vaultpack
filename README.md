@@ -6,7 +6,7 @@
 
 - WebDAV 地址、账号、密码和远端目录配置
 - 从容器挂载根目录中选择要备份的子目录
-- 按天设置备份周期，例如每 7 天运行一次
+- 使用 cron 表达式设置备份时间，按容器 `TZ` 时区执行
 - 按任务设置保留版本数，例如只保留最近 5 个包
 - 管理员网页登录
 - 可选 TOTP 二次验证，兼容 Google Authenticator、1Password、Microsoft Authenticator 等
@@ -23,7 +23,7 @@ volumes:
   - /path/to/your/server/folder:/backup-source:ro
 ```
 
-把 `/path/to/your/server/folder` 换成宿主机上需要暴露给容器选择的目录。然后修改 `BACKUP_SECRET_KEY` 为随机长字符串。
+把 `/path/to/your/server/folder` 换成宿主机上需要暴露给容器选择的目录。然后修改 `BACKUP_SECRET_KEY` 为随机长字符串。`TZ` 用来指定 Web 中 cron 表达式的执行时区，不设置时默认使用 `Asia/Shanghai`。
 
 启动：
 
@@ -75,7 +75,8 @@ http://服务器IP:18080
 | `BACKUP_DATA_DIR` | `/data` | 配置和数据库目录 |
 | `BACKUP_SOURCE_ROOT` | `/backup-source` | 允许在网页中选择的备份根目录 |
 | `BACKUP_WORK_DIR` | `/tmp/backup-work` | 压缩临时目录 |
-| `TZ` | 镜像默认时区 | 容器时区 |
+| `TZ` | `Asia/Shanghai` | 容器时区，也是 Web 中 cron 表达式的执行时区 |
+| `BACKUP_TIMEZONE` | 未设置 | 可选，优先级高于 `TZ`，用于单独指定 Web cron 执行时区 |
 
 ## 备份命名和保留策略
 
