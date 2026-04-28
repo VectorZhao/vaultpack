@@ -452,12 +452,12 @@ th {
 .job-table th, .job-table td { font-size: 16px; }
 .job-table th { font-size: 13px; }
 .job-table th:nth-child(1) { width: 11%; }
-.job-table th:nth-child(2) { width: 28%; }
+.job-table th:nth-child(2) { width: 25%; }
 .job-table th:nth-child(3) { width: 10%; }
 .job-table th:nth-child(4) { width: 13%; }
-.job-table th:nth-child(5) { width: 10%; }
-.job-table th:nth-child(6) { width: 18%; }
-.job-table th:nth-child(7) { width: 10%; }
+.job-table th:nth-child(5) { width: 9%; }
+.job-table th:nth-child(6) { width: 12%; }
+.job-table th:nth-child(7) { width: 20%; }
 .job-name { font-weight: 800; }
 .path-cell {
   font-weight: 750;
@@ -467,18 +467,39 @@ th {
 }
 .job-actions { padding-left: 0; }
 .actions {
-  display: flex;
-  flex-wrap: nowrap;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 7px;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: stretch;
+}
+.actions form {
+  margin: 0;
+  min-width: 0;
 }
 .actions a,
 .actions button {
-  min-height: 30px;
-  padding: 5px 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px;
   font-size: 13px;
   white-space: nowrap;
+}
+.actions a:hover,
+.actions button:hover {
+  border-color: var(--primary);
+  background: var(--soft);
+}
+.actions .danger {
+  color: var(--danger);
 }
 .status { font-weight: 700; }
 .status.success { color: var(--success); }
@@ -888,7 +909,7 @@ th {
 
 .tree-name {
   justify-content: flex-start;
-  gap: 8px;
+  gap: 9px;
   min-height: 30px;
   padding: 4px 8px;
   border: 0;
@@ -901,23 +922,36 @@ th {
 .folder-icon {
   position: relative;
   flex: 0 0 auto;
-  width: 18px;
-  height: 13px;
-  border: 1px solid var(--primary);
-  border-radius: 3px;
-  background: color-mix(in srgb, var(--primary) 22%, var(--panel));
+  width: 21px;
+  height: 16px;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #66c8ff 0%, #2f83ff 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    0 1px 2px rgba(24, 84, 180, 0.26);
 }
+
 .folder-icon::before {
   content: "";
   position: absolute;
-  left: 1px;
-  top: -5px;
-  width: 8px;
-  height: 5px;
-  border: 1px solid var(--primary);
-  border-bottom: 0;
-  border-radius: 3px 3px 0 0;
-  background: color-mix(in srgb, var(--primary) 22%, var(--panel));
+  left: 2px;
+  top: -4px;
+  width: 10px;
+  height: 7px;
+  border-radius: 5px 5px 0 0;
+  background: linear-gradient(180deg, #8ad9ff 0%, #55baff 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.folder-icon::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
 }
 
 .name-text {

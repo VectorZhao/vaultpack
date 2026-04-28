@@ -5,7 +5,7 @@
 Docker 镜像：
 
 ```text
-vectorzhao/vaultpack:1.0.0
+vectorzhao/vaultpack:1.0.1
 vectorzhao/vaultpack:latest
 ```
 
@@ -101,7 +101,7 @@ GitHub Actions 会在 `main` 分支推送时构建并推送多架构镜像：
 | `DOCKERHUB_USERNAME` | Docker Hub 用户名 |
 | `DOCKERHUB_TOKEN` | Docker Hub Access Token 或密码 |
 
-推送的标签为 `vectorzhao/vaultpack:1.0.0` 和 `vectorzhao/vaultpack:latest`。
+推送的标签为 `vectorzhao/vaultpack:1.0.1` 和 `vectorzhao/vaultpack:latest`。
 
 ## 备份命名和保留策略
 

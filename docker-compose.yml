@@ -1,6 +1,6 @@
 services:
   webdav-backup:
-    image: vectorzhao/vaultpack:1.0.0
+    image: vectorzhao/vaultpack:1.0.1
     container_name: webdav-backup
     restart: unless-stopped
     ports:
