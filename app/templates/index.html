@@ -1,107 +1,263 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="home-actions">
-  <a class="home-action-card" href="{{ url_for('job_new') }}">
-    <span class="action-icon backup-action"></span>
-    <span>
-      <strong>备份</strong>
-      <small>将目录压缩并保存到已配置的存储目的地。</small>
-    </span>
-    <span class="button">创建 +</span>
-  </a>
-</section>
+<section class="dashboard-page">
+  {% if not cfg %}
+    <div class="notice">尚未配置 WebDAV，任务无法上传。请先进入存储目标添加 WebDAV。</div>
+  {% endif %}
 
-<section class="dashboard-head">
-  <h1>我的备份</h1>
-  <p>挂载根目录：{{ source_root }}</p>
-  <a class="button primary create-job" href="{{ url_for('job_new') }}">新建任务</a>
-</section>
+  <section class="metric-grid" aria-label="备份概览">
+    <article class="metric-card">
+      <span class="metric-icon stack-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"></path><path d="m4 12 8 4.5 8-4.5"></path><path d="m4 16.5 8 4.5 8-4.5"></path></svg>
+      </span>
+      <div>
+        <span class="metric-label">任务总数</span>
+        <strong>{{ dashboard.total_jobs }}</strong>
+        <small>启用 {{ dashboard.enabled_jobs }} / 已停用 {{ dashboard.disabled_jobs }}</small>
+      </div>
+    </article>
+    <article class="metric-card">
+      <span class="metric-icon success-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+      </span>
+      <div>
+        <span class="metric-label">最近运行状态</span>
+        {% if dashboard.latest_run %}
+          <strong>{{ {"success": "成功", "failed": "失败", "running": "运行中"}.get(dashboard.latest_run.status, dashboard.latest_run.status) }}</strong>
+          <small>{{ dashboard.latest_run.finished_at|time if dashboard.latest_run.finished_at else dashboard.latest_run.started_at|time }} · 耗时 {{ dashboard.latest_run.started_at|duration(dashboard.latest_run.finished_at) }} · {{ dashboard.latest_run.progress_total|bytes }}</small>
+        {% else %}
+          <strong>未运行</strong>
+          <small>暂无运行记录</small>
+        {% endif %}
+      </div>
+    </article>
+    <article class="metric-card wide">
+      <span class="metric-icon clock-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      </span>
+      <div>
+        <span class="metric-label">下一次运行</span>
+        {% if dashboard.next_job %}
+          <strong>{{ dashboard.next_job.next_run_at|time }}</strong>
+          <small>{{ dashboard.next_distance }}</small>
+        {% else %}
+          <strong>暂无计划</strong>
+          <small>创建并启用任务后显示</small>
+        {% endif %}
+      </div>
+    </article>
+    <article class="metric-card">
+      <span class="metric-icon warning-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6"></path><path d="M12 17h.01"></path></svg>
+      </span>
+      <div>
+        <span class="metric-label">异常任务</span>
+        <strong>{{ dashboard.abnormal_jobs }}</strong>
+        <small>{{ "需要处理" if dashboard.abnormal_jobs else "一切正常" }}</small>
+      </div>
+    </article>
+  </section>
 
-{% if not cfg %}
-  <div class="notice">尚未配置 WebDAV，任务无法上传。请先进入 WebDAV 页面填写连接信息。</div>
-{% endif %}
+  <section class="dashboard-section" id="jobs">
+    <div class="console-panel jobs-console">
+      <div class="section-head">
+        <div>
+          <h1>备份任务</h1>
+          <p>挂载根目录：{{ source_root }}</p>
+        </div>
+        <a class="button primary" href="{{ url_for('job_new') }}">+ 新建任务</a>
+      </div>
 
-<section class="table-panel jobs-panel">
-  <div class="table-shell">
-    <table class="job-table">
-    <thead>
-      <tr><th>名称</th><th>目录</th><th>目的地</th><th>备份时间</th><th>保留</th><th>状态</th><th></th></tr>
-    </thead>
-    <tbody>
-      {% for job in jobs %}
-      {% set running_run = running_by_job.get(job.id) %}
-      <tr>
-        <td class="job-name" data-label="名称">{{ job.name }}</td>
-        <td class="path-cell" data-label="目录">{{ job.source_path|source_paths }}</td>
-        <td data-label="目的地">
-          {% if job.destination_base_url %}
-            WebDAV #{{ job.destination_id }}
+      <div class="table-shell dashboard-table-shell">
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th>任务名称</th>
+              <th>源目录</th>
+              <th>存储目标</th>
+              <th>计划</th>
+              <th>保留策略</th>
+              <th>状态</th>
+              <th>最近运行</th>
+              <th>下一次运行</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for job in jobs %}
+              {% set running_run = running_by_job.get(job.id) %}
+              {% set source_info = job.source_path|source_chips %}
+              <tr>
+                <td class="task-name" data-label="任务名称">
+                  <div class="task-title"><span class="task-dot {{ 'failed' if job.last_status == 'failed' else '' }}"></span><strong>{{ job.name }}</strong></div>
+                  <span class="task-enabled {{ 'off' if not job.enabled else '' }}">{{ "启用" if job.enabled else "停用" }}</span>
+                </td>
+                <td data-label="源目录">
+                  <strong>{{ job.source_path|source_count }}</strong>
+                  <div class="source-chip-list">
+                    {% for chip in source_info.chips %}
+                      <span>{{ chip }}</span>
+                    {% endfor %}
+                    {% if source_info.extra %}
+                      <span>+{{ source_info.extra }}</span>
+                    {% endif %}
+                  </div>
+                </td>
+                <td data-label="存储目标">
+                  {% if job.destination_base_url %}
+                    <strong>WebDAV #{{ job.destination_id }}</strong>
+                    <span class="mini-status">正常</span>
+                    <small class="muted-line">{{ job.destination_remote_dir }}</small>
+                  {% else %}
+                    <span class="status failed">未配置</span>
+                  {% endif %}
+                </td>
+                <td data-label="计划">
+                  <strong>{{ job.cron_expr|cron_label }}</strong>
+                  <small class="muted-line">cron: {{ job.cron_expr }}</small>
+                </td>
+                <td data-label="保留策略">
+                  <strong>保留 {{ job.retention_count }} 个版本</strong>
+                  <small class="muted-line">按时间清理</small>
+                </td>
+                <td data-label="状态">
+                  {% if running_run %}
+                    <span class="status running">运行中</span>
+                    <div class="row-progress">
+                      <span>{{ running_run.progress_label or "正在运行..." }}</span>
+                      <div class="progress-track mini"><div class="progress-bar" style="width: {{ running_run|progress_percent }}%"></div></div>
+                    </div>
+                  {% else %}
+                    <span class="status {{ job.last_status or 'idle' }}">{{ {"success": "成功", "failed": "失败"}.get(job.last_status, "未运行") }}</span>
+                  {% endif %}
+                </td>
+                <td data-label="最近运行">
+                  <span>{{ job.last_run_at|time }}</span>
+                  {% if job.last_message %}<small class="muted-line">{{ job.last_message }}</small>{% endif %}
+                </td>
+                <td data-label="下一次运行">
+                  <span>{{ job.next_run_at|time if job.enabled else "已停用" }}</span>
+                </td>
+                <td class="job-actions" data-label="操作">
+                  <div class="task-actions">
+                    <form method="post" action="{{ url_for('job_run', job_id=job.id) }}">
+                      <button {% if running_run %}disabled{% endif %}>{{ "运行中" if running_run else "立即备份" }}</button>
+                    </form>
+                    <details class="more-menu">
+                      <summary>更多</summary>
+                      <div>
+                        <a href="{{ url_for('job_edit', job_id=job.id) }}">编辑任务</a>
+                        <form method="post" action="{{ url_for('job_toggle', job_id=job.id) }}">
+                          <button type="submit" {% if running_run and job.enabled %}disabled{% endif %}>{{ "停用任务" if job.enabled else "启用任务" }}</button>
+                        </form>
+                        <button class="danger" type="button" onclick="document.querySelector('#delete-job-{{ job.id }}').showModal()">删除任务</button>
+                      </div>
+                    </details>
+                  </div>
+                  <dialog class="confirm-dialog" id="delete-job-{{ job.id }}">
+                    <form method="dialog" class="confirm-card">
+                      <h2>删除任务「{{ job.name }}」？</h2>
+                      <p>删除后不能继续运行这个备份任务，任务配置会被移除。正在运行的任务会阻止删除。</p>
+                      <div class="confirm-actions">
+                        <button class="secondary" value="cancel">否</button>
+                        <button class="danger-confirm" value="confirm" form="delete-job-form-{{ job.id }}">是</button>
+                      </div>
+                    </form>
+                    <form id="delete-job-form-{{ job.id }}" method="post" action="{{ url_for('job_delete', job_id=job.id) }}"></form>
+                  </dialog>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="9" class="empty">还没有备份任务。</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="console-panel runs-console" id="recent-runs">
+    <div class="section-head compact">
+      <h2>最近运行</h2>
+      <a href="{{ url_for('runs') }}">查看全部运行记录 ›</a>
+    </div>
+    <div class="table-shell compact dashboard-table-shell">
+      <table class="dashboard-table runs-table">
+        <thead><tr><th>任务名称</th><th>开始时间</th><th>结束时间</th><th>耗时</th><th>状态</th><th>大小</th><th>文件</th></tr></thead>
+        <tbody>
+          {% for run in runs %}
+            <tr>
+              <td data-label="任务名称">{{ run.job_name }}</td>
+              <td data-label="开始时间">{{ run.started_at|time }}</td>
+              <td data-label="结束时间">{{ run.finished_at|time }}</td>
+              <td data-label="耗时">{{ run.started_at|duration(run.finished_at) }}</td>
+              <td data-label="状态"><span class="status {{ run.status }}">{{ {"success": "成功", "failed": "失败", "running": "运行中"}.get(run.status, run.status) }}</span></td>
+              <td data-label="大小">{{ run.progress_total|bytes }}</td>
+              <td class="run-message" data-label="文件">{{ run.archive_name or run.message or "-" }}</td>
+            </tr>
           {% else %}
-            <span class="status failed">未配置</span>
-          {% endif %}
-        </td>
-        <td data-label="备份时间"><code>{{ job.cron_expr }}</code></td>
-        <td data-label="保留">{{ job.retention_count }} 个版本</td>
-        <td data-label="状态">
-          {% if running_run %}
-            <span class="status running">运行中</span>
-            <div class="row-progress">
-              <span>{{ running_run.progress_label or "正在运行..." }}</span>
-              <div class="progress-track mini">
-                <div class="progress-bar" style="width: {{ running_run|progress_percent }}%"></div>
-              </div>
-            </div>
-          {% else %}
-            <span class="status {{ job.last_status or 'idle' }}">{{ {"success": "成功", "failed": "失败"}.get(job.last_status, "未运行") }}</span>
-          {% endif %}
-        </td>
-        <td class="job-actions" data-label="操作">
-          <div class="actions">
-            <a href="{{ url_for('job_edit', job_id=job.id) }}">编辑</a>
-            <form method="post" action="{{ url_for('job_run', job_id=job.id) }}"><button {% if running_run %}disabled{% endif %}>{{ "运行中" if running_run else "立即备份" }}</button></form>
-            <button class="danger" type="button" onclick="document.querySelector('#delete-job-{{ job.id }}').showModal()">删除</button>
+            <tr><td colspan="7" class="empty">暂无运行记录。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="dashboard-bottom-grid">
+    <article class="console-panel info-card">
+      <div class="section-head compact">
+        <h2>存储目标概览</h2>
+      </div>
+      <p>共 {{ dashboard.destinations }} 个存储目标 <span class="mini-status">正常 {{ dashboard.healthy_destinations }} 个</span></p>
+      <div class="destination-list">
+        {% for destination in configs[:3] %}
+          <div>
+            <strong>WebDAV #{{ destination.id }}</strong>
+            <span class="mini-status">正常</span>
+            <small>{{ destination.remote_dir }}</small>
           </div>
-          <dialog class="confirm-dialog" id="delete-job-{{ job.id }}">
-            <form method="dialog" class="confirm-card">
-              <h2>删除任务「{{ job.name }}」？</h2>
-              <p>删除后不能继续运行这个备份任务，任务配置会被移除。正在运行的任务会阻止删除。</p>
-              <div class="confirm-actions">
-                <button class="secondary" value="cancel">否</button>
-                <button class="danger-confirm" value="confirm" form="delete-job-form-{{ job.id }}">是</button>
-              </div>
-            </form>
-            <form id="delete-job-form-{{ job.id }}" method="post" action="{{ url_for('job_delete', job_id=job.id) }}"></form>
-          </dialog>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="7" class="empty">还没有备份任务。</td></tr>
-      {% endfor %}
-    </tbody>
-    </table>
-  </div>
-</section>
+        {% else %}
+          <div><strong>暂无存储目标</strong><small>请先添加 WebDAV。</small></div>
+        {% endfor %}
+      </div>
+      <a class="text-link" href="{{ url_for('destinations') }}">查看全部存储目标 ›</a>
+    </article>
 
-<section class="table-panel runs-panel">
-  <h2>最近运行</h2>
-  <div class="table-shell compact">
-    <table>
-    <thead><tr><th>任务</th><th>开始</th><th>结束</th><th>状态</th><th>信息</th></tr></thead>
-    <tbody>
-      {% for run in runs %}
-      <tr>
-        <td data-label="任务">{{ run.job_name }}</td>
-        <td data-label="开始">{{ run.started_at|time }}</td>
-        <td data-label="结束">{{ run.finished_at|time }}</td>
-        <td data-label="状态"><span class="status {{ run.status }}">{{ {"success": "成功", "failed": "失败", "running": "运行中"}.get(run.status, run.status) }}</span></td>
-        <td class="run-message" data-label="信息">{{ run.message or run.archive_name or "-" }}</td>
-      </tr>
-      {% else %}
-      <tr><td colspan="5" class="empty">暂无运行记录。</td></tr>
-      {% endfor %}
-    </tbody>
-    </table>
-  </div>
+    <article class="console-panel health-card">
+      <div class="section-head compact">
+        <h2>备份健康度</h2>
+      </div>
+      <div class="health-layout">
+        <div class="health-ring" style="--value: {{ dashboard.health_percent }}"><strong>{{ dashboard.health_percent }}%</strong></div>
+        <ul>
+          <li>调度运行正常</li>
+          <li>最近备份{{ "成功" if dashboard.latest_run and dashboard.latest_run.status == "success" else "待确认" }}</li>
+          <li>存储目标可用</li>
+          <li>保留策略正常</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="console-panel quick-card">
+      <div class="section-head compact">
+        <h2>快速操作</h2>
+      </div>
+      <a href="{{ url_for('job_new') }}">新建备份任务 <span>›</span></a>
+      <a href="#jobs">查看备份任务 <span>›</span></a>
+      <a href="{{ url_for('runs') }}">查看运行记录 <span>›</span></a>
+      <a href="{{ url_for('restore') }}">恢复数据 <span>›</span></a>
+    </article>
+
+    <article class="console-panel quick-card">
+      <div class="section-head compact">
+        <h2>帮助与支持</h2>
+      </div>
+      <a href="https://github.com/VectorZhao/vaultpack#readme" target="_blank" rel="noreferrer">使用文档 <span>›</span></a>
+      <a href="{{ url_for('about') }}">关于 vaultpack <span>›</span></a>
+      <a href="{{ url_for('destinations') }}">管理存储目标 <span>›</span></a>
+      <a href="{{ url_for('account') }}">安全设置 <span>›</span></a>
+    </article>
+  </section>
 </section>
 {% if active_run %}
   <script>

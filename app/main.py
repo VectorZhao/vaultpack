@@ -1,4 +1,6 @@
 import base64
+import os
+import socket
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from threading import Thread
@@ -11,6 +13,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from .backup import (
     create_pending_run,
+    format_bytes,
     format_source_paths,
     list_source_dirs,
     next_run_from_cron,
@@ -33,7 +36,12 @@ def create_app():
     app.permanent_session_lifetime = timedelta(days=7)
     app.jinja_env.filters["time"] = format_time
     app.jinja_env.filters["source_paths"] = format_source_paths
+    app.jinja_env.filters["source_count"] = format_source_count
+    app.jinja_env.filters["source_chips"] = source_chips
     app.jinja_env.filters["progress_percent"] = progress_percent
+    app.jinja_env.filters["duration"] = format_duration
+    app.jinja_env.filters["bytes"] = format_size
+    app.jinja_env.filters["cron_label"] = cron_label
 
     @app.context_processor
     def inject_app_context():
@@ -113,9 +121,10 @@ def create_app():
                 "ORDER BY jobs.id DESC"
             ).fetchall()
             cfg = conn.execute("SELECT * FROM webdav_config ORDER BY id LIMIT 1").fetchone()
+            configs = conn.execute("SELECT * FROM webdav_config ORDER BY id").fetchall()
             runs = conn.execute(
                 "SELECT runs.*, jobs.name AS job_name FROM runs JOIN jobs ON jobs.id = runs.job_id "
-                "ORDER BY runs.id DESC LIMIT 20"
+                "ORDER BY runs.id DESC LIMIT 5"
             ).fetchall()
             running_runs = conn.execute(
                 "SELECT runs.*, jobs.name AS job_name FROM runs JOIN jobs ON jobs.id = runs.job_id "
@@ -130,8 +139,19 @@ def create_app():
             runs=runs,
             running_by_job=running_by_job,
             active_run=active_run,
+            dashboard=_dashboard_context(jobs, runs, running_runs, configs),
+            configs=configs,
             source_root=SOURCE_ROOT,
         )
+
+    @app.get("/runs")
+    def runs():
+        with connect() as conn:
+            runs = conn.execute(
+                "SELECT runs.*, jobs.name AS job_name FROM runs JOIN jobs ON jobs.id = runs.job_id "
+                "ORDER BY runs.id DESC"
+            ).fetchall()
+        return render_template("runs.html", runs=runs)
 
     @app.get("/webdav")
     def webdav():
@@ -328,6 +348,28 @@ def create_app():
             flash("手动备份已开始，请查看进度。", "success")
         return redirect(url_for("index"))
 
+    @app.post("/jobs/<int:job_id>/toggle")
+    def job_toggle(job_id):
+        with connect() as conn:
+            job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+            if not job:
+                abort(404)
+            running = conn.execute(
+                "SELECT 1 FROM runs WHERE job_id = ? AND status = 'running' LIMIT 1",
+                (job_id,),
+            ).fetchone()
+            if running and job["enabled"]:
+                flash("这个任务正在运行中，不能停用。", "error")
+                return redirect(url_for("index"))
+            next_enabled = not bool(job["enabled"])
+            next_run_at = next_run_from_cron(job["cron_expr"]) if next_enabled else None
+            conn.execute(
+                "UPDATE jobs SET enabled = ?, next_run_at = ? WHERE id = ?",
+                (next_enabled, next_run_at, job_id),
+            )
+        flash("备份任务已启用。" if next_enabled else "备份任务已停用。", "success")
+        return redirect(url_for("index"))
+
     @app.post("/jobs/<int:job_id>/delete")
     def job_delete(job_id):
         with connect() as conn:
@@ -504,6 +546,8 @@ def _topbar_context():
         "title": _topbar_title(),
         "scheduler_label": "调度运行中",
         "next_label": "暂无计划任务",
+        "next_time": "暂无计划",
+        "node_name": os.environ.get("VAULTPACK_NODE_NAME") or socket.gethostname(),
         "active_run": None,
         "active_percent": 0,
     }
@@ -529,6 +573,7 @@ def _topbar_context():
         topbar["scheduler_label"] = "正在备份"
     if next_job:
         topbar["next_label"] = f"下次运行：{format_time(next_job['next_run_at'])} · {next_job['name']}"
+        topbar["next_time"] = format_time(next_job["next_run_at"])
     return topbar
 
 
@@ -554,8 +599,39 @@ def _topbar_title():
         "account_totp_enable": "设置",
         "account_totp_disable": "设置",
         "about": "关于 vaultpack",
+        "runs": "运行记录",
     }
     return title_map.get(endpoint, "备份控制台")
+
+
+def _dashboard_context(jobs, runs, running_runs, configs):
+    jobs = list(jobs)
+    runs = list(runs)
+    configs = list(configs)
+    latest_run = runs[0] if runs else None
+    next_job = min(
+        (job for job in jobs if job["enabled"] and job["next_run_at"]),
+        key=lambda job: job["next_run_at"],
+        default=None,
+    )
+    abnormal_jobs = [
+        job for job in jobs
+        if job["last_status"] == "failed" or not job["destination_base_url"]
+    ]
+    enabled_count = sum(1 for job in jobs if job["enabled"])
+    return {
+        "total_jobs": len(jobs),
+        "enabled_jobs": enabled_count,
+        "disabled_jobs": len(jobs) - enabled_count,
+        "latest_run": latest_run,
+        "next_job": next_job,
+        "next_distance": relative_time_until(next_job["next_run_at"]) if next_job else "暂无计划",
+        "abnormal_jobs": len(abnormal_jobs),
+        "running_jobs": len(running_runs),
+        "destinations": len(configs),
+        "healthy_destinations": len(configs),
+        "health_percent": 100 if jobs and not abnormal_jobs else (0 if abnormal_jobs else 100),
+    }
 
 
 def _job_values():
@@ -605,6 +681,96 @@ def format_time(value):
         return dt.strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return value
+
+
+def format_date_time_short(value):
+    if not value:
+        return "-"
+    try:
+        dt = datetime.fromisoformat(value)
+        if dt.tzinfo:
+            dt = dt.astimezone(APP_TIMEZONE)
+        return dt.strftime("%Y-%m-%d %H:%M")
+    except ValueError:
+        return value
+
+
+def relative_time_until(value):
+    if not value:
+        return "暂无计划"
+    try:
+        dt = datetime.fromisoformat(value)
+        if dt.tzinfo:
+            dt = dt.astimezone(APP_TIMEZONE)
+        now = datetime.now(APP_TIMEZONE)
+        seconds = int((dt - now).total_seconds())
+    except ValueError:
+        return "时间未知"
+    if seconds <= 0:
+        return "等待调度"
+    minutes = seconds // 60
+    hours = minutes // 60
+    days = hours // 24
+    if days:
+        return f"距离 {days} 天 {hours % 24} 小时"
+    if hours:
+        return f"距离 {hours} 小时 {minutes % 60} 分钟"
+    return f"距离 {max(minutes, 1)} 分钟"
+
+
+def format_duration(started_at, finished_at=None):
+    if not started_at:
+        return "-"
+    try:
+        start = datetime.fromisoformat(started_at)
+        end = datetime.fromisoformat(finished_at) if finished_at else datetime.now(timezone.utc)
+        if start.tzinfo and end.tzinfo:
+            end = end.astimezone(start.tzinfo)
+        seconds = max(0, int((end - start).total_seconds()))
+    except ValueError:
+        return "-"
+    hours, remainder = divmod(seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+
+def format_source_count(value):
+    count = len(parse_source_paths(value))
+    return f"已选择 {count} 个目录"
+
+
+def source_chips(value, limit=3):
+    paths = parse_source_paths(value)
+    chips = paths[:limit]
+    extra = max(0, len(paths) - len(chips))
+    return {"chips": chips, "extra": extra, "total": len(paths)}
+
+
+def format_size(value):
+    return format_bytes(value or 0)
+
+
+def cron_label(value):
+    fields = (value or "").split()
+    if len(fields) != 5:
+        return value or "-"
+    minute, hour, day, month, weekday = fields
+    if not (minute.isdigit() and hour.isdigit()):
+        return value
+    time_label = f"{int(hour):02d}:{int(minute):02d}"
+    if day == "*" and month == "*" and weekday == "*":
+        return f"每天 {time_label}"
+    if day.startswith("*/") and month == "*" and weekday == "*":
+        interval = day[2:]
+        if interval.isdigit():
+            return f"每 {int(interval)} 天 {time_label}"
+    if day == "*" and month == "*" and weekday.startswith("*/"):
+        interval = weekday[2:]
+        if interval.isdigit():
+            return f"每 {int(interval)} 周 {time_label}"
+    if day.isdigit() and month == "*" and weekday == "*":
+        return f"每月 {int(day)} 日 {time_label}"
+    return value
 
 
 def progress_percent(run):

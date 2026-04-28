@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="dashboard-section runs-page">
+  <section class="console-panel runs-console" id="all-runs">
+    <div class="section-head compact">
+      <div>
+        <h1>全部运行记录</h1>
+        <p>按执行时间倒序显示所有备份任务的运行结果。</p>
+      </div>
+      <a class="text-link" href="{{ url_for('index') }}#recent-runs">返回控制台 ›</a>
+    </div>
+    <div class="table-shell compact dashboard-table-shell">
+      <table class="dashboard-table runs-table">
+        <thead>
+          <tr>
+            <th>任务名称</th>
+            <th>开始时间</th>
+            <th>结束时间</th>
+            <th>耗时</th>
+            <th>状态</th>
+            <th>大小</th>
+            <th>文件</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for run in runs %}
+            <tr>
+              <td data-label="任务名称">{{ run.job_name }}</td>
+              <td data-label="开始时间">{{ run.started_at|time }}</td>
+              <td data-label="结束时间">{{ run.finished_at|time }}</td>
+              <td data-label="耗时">{{ run.started_at|duration(run.finished_at) }}</td>
+              <td data-label="状态"><span class="status {{ run.status }}">{{ {"success": "成功", "failed": "失败", "running": "运行中"}.get(run.status, run.status) }}</span></td>
+              <td data-label="大小">{{ run.progress_total|bytes }}</td>
+              <td class="run-message" data-label="文件">{{ run.archive_name or run.message or "-" }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="7" class="empty">暂无运行记录。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
+{% endblock %}

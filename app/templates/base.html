@@ -7,8 +7,13 @@
   <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon.png') }}">
   <script>
     (() => {
-      const savedTheme = localStorage.getItem("vaultpack-theme");
-      document.documentElement.dataset.theme = savedTheme === "dark" ? "dark" : "light";
+      const validModes = ["light", "dark", "auto"];
+      const savedMode = localStorage.getItem("vaultpack-theme-mode");
+      const legacyTheme = localStorage.getItem("vaultpack-theme");
+      const mode = validModes.includes(savedMode) ? savedMode : (["light", "dark"].includes(legacyTheme) ? legacyTheme : "auto");
+      const systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.themeMode = mode;
+      document.documentElement.dataset.theme = mode === "auto" ? (systemDark ? "dark" : "light") : mode;
     })();
   </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -32,7 +37,7 @@
           </a>
           <a class="{{ 'active' if request.endpoint in ['job_new', 'job_create', 'job_edit', 'job_update'] else '' }}" href="{{ url_for('job_new') }}">
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="3"></ellipse><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"></path><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"></path></svg>
-            添加备份
+            备份任务
           </a>
           <a class="{{ 'active' if request.endpoint == 'restore' else '' }}" href="{{ url_for('restore') }}">
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 5v6h6"></path><path d="M12 8v5l3 2"></path></svg>
@@ -40,7 +45,11 @@
           </a>
           <a class="{{ 'active' if request.endpoint in ['destinations', 'destination_new', 'webdav_new', 'webdav', 'webdav_detail', 'webdav_post', 'webdav_delete', 'webdav_test', 'webdav_test_config'] else '' }}" href="{{ url_for('destinations') }}">
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.2l2.1-2.1a5 5 0 0 0-7.1-7.1L11 5.1"></path><path d="M14 11a5 5 0 0 0-7.1-.2l-2.1 2.1a5 5 0 0 0 7.1 7.1L13 18.9"></path></svg>
-            存储目的地
+            存储目标
+          </a>
+          <a class="{{ 'active' if request.endpoint == 'runs' else '' }}" href="{{ url_for('runs') }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path><path d="M8 5v14"></path></svg>
+            运行记录
           </a>
           <a class="{{ 'active' if request.endpoint in ['account', 'account_username', 'account_password', 'account_totp_enable', 'account_totp_disable'] else '' }}" href="{{ url_for('account') }}">
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 0 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 0 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 0 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2a2 2 0 0 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z"></path></svg>
@@ -66,6 +75,7 @@
               退出登录
             </button>
           </form>
+          <div class="app-version">Vaultpack v1.1.0</div>
         </div>
       </aside>
       <div class="workspace">
@@ -75,20 +85,28 @@
               <div class="topbar-title">{{ topbar.title }}</div>
               <span class="topbar-pill {{ 'running' if topbar.active_run else '' }}">{{ topbar.scheduler_label }}</span>
             </div>
-            {% if topbar.active_run %}
-              <div class="topbar-subtitle">
-                <strong>{{ topbar.active_run.job_name }}</strong>
-                <span>{{ topbar.active_run.progress_label or topbar.active_run.message or "正在运行..." }}</span>
-              </div>
-            {% else %}
-              <div class="topbar-subtitle">{{ topbar.next_label }}</div>
-            {% endif %}
+            <div class="topbar-subtitle">
+              <span>节点：{{ topbar.node_name }}</span>
+              <span>时区：{{ backup_timezone }}</span>
+            </div>
           </div>
           <div class="topbar-actions">
-            <span>本地调度</span>
+            {% if topbar.active_run %}
+              <span class="topbar-next">正在运行：{{ topbar.active_run.job_name }}</span>
+            {% else %}
+              <span class="topbar-next">下次运行：{{ topbar.next_time }}</span>
+            {% endif %}
+            <span class="topbar-divider"></span>
+            <span>本地调度：</span>
             <span class="dot {{ 'running' if topbar.active_run else 'ok' }}"></span>
+            <span class="topbar-state">{{ '运行中' if topbar.active_run else '运行中' }}</span>
             <button type="button" disabled title="暂停调度功能将在后续版本加入">暂停</button>
           </div>
+          {% if topbar.active_run %}
+            <div class="topbar-runline">
+              {{ topbar.active_run.progress_label or topbar.active_run.message or "正在运行..." }}
+            </div>
+          {% endif %}
           {% if topbar.active_run %}
             <div class="topbar-progress" aria-hidden="true">
               <div style="width: {{ topbar.active_percent }}%"></div>
@@ -118,21 +136,57 @@
     (() => {
       const root = document.documentElement;
       const button = document.querySelector("[data-theme-toggle]");
+      const modeInputs = document.querySelectorAll("[data-theme-choice]");
+      const media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
       if (!button) return;
 
-      const applyTheme = (theme) => {
-        const nextTheme = theme === "dark" ? "dark" : "light";
+      const modeKey = "vaultpack-theme-mode";
+      const legacyKey = "vaultpack-theme";
+      const validModes = ["light", "dark", "auto"];
+      const systemTheme = () => media && media.matches ? "dark" : "light";
+      const storedMode = () => {
+        const mode = localStorage.getItem(modeKey);
+        if (validModes.includes(mode)) return mode;
+        const legacyTheme = localStorage.getItem(legacyKey);
+        return ["light", "dark"].includes(legacyTheme) ? legacyTheme : "auto";
+      };
+
+      const applyThemeMode = (mode, persist = false) => {
+        const nextMode = validModes.includes(mode) ? mode : "auto";
+        const nextTheme = nextMode === "auto" ? systemTheme() : nextMode;
+        root.dataset.themeMode = nextMode;
         root.dataset.theme = nextTheme;
-        localStorage.setItem("vaultpack-theme", nextTheme);
+        if (persist) {
+          localStorage.setItem(modeKey, nextMode);
+          localStorage.removeItem(legacyKey);
+        }
+        modeInputs.forEach((input) => {
+          input.checked = input.value === nextMode;
+        });
         const label = nextTheme === "dark" ? "切换白天模式" : "切换夜间模式";
         button.setAttribute("aria-label", label);
         button.setAttribute("title", label);
       };
 
-      applyTheme(root.dataset.theme);
+      applyThemeMode(storedMode());
       button.addEventListener("click", () => {
-        applyTheme(root.dataset.theme === "dark" ? "light" : "dark");
+        applyThemeMode(root.dataset.theme === "dark" ? "light" : "dark", true);
       });
+      modeInputs.forEach((input) => {
+        input.addEventListener("change", () => {
+          if (input.checked) applyThemeMode(input.value, true);
+        });
+      });
+      if (media) {
+        const onSystemThemeChange = () => {
+          if (storedMode() === "auto") applyThemeMode("auto");
+        };
+        if (media.addEventListener) {
+          media.addEventListener("change", onSystemThemeChange);
+        } else if (media.addListener) {
+          media.addListener(onSystemThemeChange);
+        }
+      }
     })();
   </script>
 </body>
