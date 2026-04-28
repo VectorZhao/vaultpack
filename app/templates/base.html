@@ -69,13 +69,31 @@
         </div>
       </aside>
       <div class="workspace">
-        <header class="topbar">
-          <div class="topbar-title">备份控制台</div>
+        <header class="topbar {{ 'is-running' if topbar.active_run else '' }}">
+          <div class="topbar-main">
+            <div class="topbar-title-row">
+              <div class="topbar-title">{{ topbar.title }}</div>
+              <span class="topbar-pill {{ 'running' if topbar.active_run else '' }}">{{ topbar.scheduler_label }}</span>
+            </div>
+            {% if topbar.active_run %}
+              <div class="topbar-subtitle">
+                <strong>{{ topbar.active_run.job_name }}</strong>
+                <span>{{ topbar.active_run.progress_label or topbar.active_run.message or "正在运行..." }}</span>
+              </div>
+            {% else %}
+              <div class="topbar-subtitle">{{ topbar.next_label }}</div>
+            {% endif %}
+          </div>
           <div class="topbar-actions">
-            <span>本地运行</span>
-            <span class="dot"></span>
+            <span>本地调度</span>
+            <span class="dot {{ 'running' if topbar.active_run else 'ok' }}"></span>
             <button type="button" disabled title="暂停调度功能将在后续版本加入">暂停</button>
           </div>
+          {% if topbar.active_run %}
+            <div class="topbar-progress" aria-hidden="true">
+              <div style="width: {{ topbar.active_percent }}%"></div>
+            </div>
+          {% endif %}
         </header>
         <main>
   {% else %}

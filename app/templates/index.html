@@ -21,18 +21,6 @@
   <div class="notice">尚未配置 WebDAV，任务无法上传。请先进入 WebDAV 页面填写连接信息。</div>
 {% endif %}
 
-{% if active_run %}
-  <section class="run-progress-banner">
-    <div>
-      <strong>{{ active_run.job_name }}</strong>
-      <span>{{ active_run.progress_label or active_run.message or "正在运行..." }}</span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-bar" style="width: {{ active_run|progress_percent }}%"></div>
-    </div>
-  </section>
-{% endif %}
-
 <section class="table-panel jobs-panel">
   <div class="table-shell">
     <table class="job-table">

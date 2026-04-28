@@ -37,7 +37,7 @@ def create_app():
 
     @app.context_processor
     def inject_app_context():
-        return {"backup_timezone": TIMEZONE_NAME}
+        return {"backup_timezone": TIMEZONE_NAME, "topbar": _topbar_context()}
 
     scheduler = BackgroundScheduler(daemon=True)
     scheduler.add_job(run_due_jobs, "interval", minutes=1, id="run_due_jobs", replace_existing=True)
@@ -497,6 +497,65 @@ def _insert_webdav_config(config):
             "INSERT INTO webdav_config(base_url, username, password, remote_dir) VALUES(?, ?, ?, ?)",
             (config.base_url, config.username, config.password, config.remote_dir),
         )
+
+
+def _topbar_context():
+    topbar = {
+        "title": _topbar_title(),
+        "scheduler_label": "调度运行中",
+        "next_label": "暂无计划任务",
+        "active_run": None,
+        "active_percent": 0,
+    }
+    if not session.get("user_id"):
+        return topbar
+    try:
+        with connect() as conn:
+            active_run = conn.execute(
+                "SELECT runs.*, jobs.name AS job_name FROM runs JOIN jobs ON jobs.id = runs.job_id "
+                "WHERE runs.status = 'running' ORDER BY runs.started_at DESC LIMIT 1"
+            ).fetchone()
+            next_job = conn.execute(
+                "SELECT name, next_run_at FROM jobs "
+                "WHERE enabled = 1 AND next_run_at IS NOT NULL "
+                "ORDER BY next_run_at ASC LIMIT 1"
+            ).fetchone()
+    except Exception:
+        return topbar
+
+    if active_run:
+        topbar["active_run"] = active_run
+        topbar["active_percent"] = progress_percent(active_run)
+        topbar["scheduler_label"] = "正在备份"
+    if next_job:
+        topbar["next_label"] = f"下次运行：{format_time(next_job['next_run_at'])} · {next_job['name']}"
+    return topbar
+
+
+def _topbar_title():
+    endpoint = request.endpoint or ""
+    title_map = {
+        "index": "备份控制台",
+        "job_new": "新建备份",
+        "job_create": "新建备份",
+        "job_edit": "编辑备份",
+        "job_update": "编辑备份",
+        "restore": "恢复",
+        "destinations": "存储目的地",
+        "destination_new": "添加存储目的地",
+        "webdav": "WebDAV 目的地",
+        "webdav_detail": "管理 WebDAV",
+        "webdav_new": "新建 WebDAV",
+        "webdav_post": "管理 WebDAV",
+        "webdav_new_post": "新建 WebDAV",
+        "account": "设置",
+        "account_username": "设置",
+        "account_password": "设置",
+        "account_totp_enable": "设置",
+        "account_totp_disable": "设置",
+        "about": "关于 vaultpack",
+    }
+    return title_map.get(endpoint, "备份控制台")
 
 
 def _job_values():
