@@ -161,6 +161,10 @@ def create_app():
     def restore():
         return render_template("placeholder.html", title="恢复", message="恢复功能将在后续版本加入。")
 
+    @app.get("/about")
+    def about():
+        return render_template("about.html")
+
     @app.post("/webdav/<int:config_id>")
     def webdav_post(config_id):
         result = _save_webdav_config(config_id)

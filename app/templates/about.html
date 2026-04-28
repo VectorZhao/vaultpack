@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="about-page">
+  <header class="about-hero">
+    <div>
+      <span class="eyebrow">关于 vaultpack</span>
+      <h1>自托管的文件备份控制台</h1>
+      <p>vaultpack 通过 Docker 部署，把服务器目录挂载到容器中，在网页端选择源目录、配置计划任务和版本保留策略，然后将压缩后的备份上传到已配置的存储目的地。</p>
+    </div>
+    <div class="about-version">
+      <span class="brand-mark">V</span>
+      <strong>vaultpack</strong>
+      <small>当前支持 WebDAV，后续会扩展更多存储类型。</small>
+    </div>
+  </header>
+
+  <div class="about-grid">
+    <section class="about-card">
+      <h2>当前能力</h2>
+      <ul class="feature-list">
+        <li>浏览并多选容器中挂载的源数据目录。</li>
+        <li>支持多个 WebDAV 存储目的地，并可在创建任务时选择目标。</li>
+        <li>使用 cron 表达式配置备份时间，支持手动立即备份。</li>
+        <li>按任务配置版本保留数量，自动清理超出保留范围的备份包。</li>
+        <li>提供运行记录和备份进度，便于查看最近任务状态。</li>
+      </ul>
+    </section>
+
+    <section class="about-card">
+      <h2>安全设计</h2>
+      <ul class="feature-list">
+        <li>首次启动创建管理员账号，后续通过登录保护控制台。</li>
+        <li>支持修改用户名和密码。</li>
+        <li>支持基于认证器应用的一次性验证码二次验证。</li>
+        <li>WebDAV 密码只在服务端保存，管理界面不会回显已保存密码。</li>
+      </ul>
+    </section>
+
+    <section class="about-card span-2">
+      <h2>项目方向</h2>
+      <p>这个项目的目标是做一个轻量、清晰、便于自部署的备份入口。WebDAV 是第一种目的地类型，后续可以继续加入 S3 兼容存储、SFTP、本地文件系统等目的地，同时保持统一的任务调度、版本管理和恢复体验。</p>
+      <div class="about-actions">
+        <a class="button primary" href="{{ url_for('index') }}">返回首页</a>
+        <a class="button secondary" href="https://github.com/VectorZhao/vaultpack#readme" target="_blank" rel="noreferrer">查看文档</a>
+      </div>
+    </section>
+  </div>
+</section>
+{% endblock %}
