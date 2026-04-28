@@ -727,52 +727,32 @@ th {
 }
 
 .icon-button {
-  width: 40px;
-  min-height: 40px;
+  width: 38px;
+  min-height: 38px;
   padding: 0;
+  border-radius: 8px;
 }
 
 .danger-icon-button {
-  color: var(--danger);
-  border-color: #f1c5cc;
-  background: #fff7f8;
+  color: #1f2937;
+  border-color: var(--line);
+  background: #fff;
 }
 
 .danger-icon-button:hover {
-  border-color: #e58b99;
+  color: var(--danger);
+  border-color: #f0b7c0;
   background: #fff0f2;
 }
 
 .trash-icon {
-  width: 17px;
+  width: 18px;
   height: 18px;
-  position: relative;
-  border: 2px solid currentColor;
-  border-top: 0;
-  border-radius: 0 0 4px 4px;
-}
-
-.trash-icon::before {
-  content: "";
-  position: absolute;
-  left: -3px;
-  right: -3px;
-  top: -6px;
-  height: 2px;
-  background: currentColor;
-  border-radius: 2px;
-}
-
-.trash-icon::after {
-  content: "";
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  top: -10px;
-  height: 4px;
-  border: 2px solid currentColor;
-  border-bottom: 0;
-  border-radius: 4px 4px 0 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .confirm-dialog {
