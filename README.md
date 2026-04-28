@@ -112,3 +112,6 @@ job-任务ID-任务名-YYYYMMDDTHHMMSSZ.tar.gz
 ```
 
 保留策略按任务 ID 匹配同一任务的备份文件，按文件名时间顺序删除旧文件，只保留最新的 `retention_count` 个。
+# 致谢
+- [Codex](https://openai.com/zh-Hans-CN/codex/)
+- [Linux DO](https://linux.do/)
