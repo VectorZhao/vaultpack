@@ -15,17 +15,46 @@
           <span>vaultpack</span>
         </div>
         <nav class="side-nav">
-          <a class="{{ 'active' if request.endpoint == 'index' else '' }}" href="{{ url_for('index') }}"><span class="nav-icon home-icon"></span>首页</a>
-          <a class="{{ 'active' if request.endpoint in ['job_new', 'job_create', 'job_edit', 'job_update'] else '' }}" href="{{ url_for('job_new') }}"><span class="nav-icon backup-icon"></span>添加备份</a>
-          <a class="{{ 'active' if request.endpoint == 'restore' else '' }}" href="{{ url_for('restore') }}"><span class="nav-icon restore-icon"></span>恢复</a>
-          <a class="{{ 'active' if request.endpoint in ['destinations', 'destination_new', 'webdav_new', 'webdav', 'webdav_detail', 'webdav_post', 'webdav_delete', 'webdav_test', 'webdav_test_config'] else '' }}" href="{{ url_for('destinations') }}"><span class="nav-icon link-icon"></span>存储目的地</a>
-          <a class="{{ 'active' if request.endpoint in ['account', 'account_password', 'account_totp_enable', 'account_totp_disable'] else '' }}" href="{{ url_for('account') }}"><span class="nav-icon settings-icon"></span>设置</a>
+          <a class="{{ 'active' if request.endpoint == 'index' else '' }}" href="{{ url_for('index') }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10.5V20h13v-9.5"></path><path d="M9.5 20v-6h5v6"></path></svg>
+            首页
+          </a>
+          <a class="{{ 'active' if request.endpoint in ['job_new', 'job_create', 'job_edit', 'job_update'] else '' }}" href="{{ url_for('job_new') }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="3"></ellipse><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"></path><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"></path></svg>
+            添加备份
+          </a>
+          <a class="{{ 'active' if request.endpoint == 'restore' else '' }}" href="{{ url_for('restore') }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 5v6h6"></path><path d="M12 8v5l3 2"></path></svg>
+            恢复
+          </a>
+          <a class="{{ 'active' if request.endpoint in ['destinations', 'destination_new', 'webdav_new', 'webdav', 'webdav_detail', 'webdav_post', 'webdav_delete', 'webdav_test', 'webdav_test_config'] else '' }}" href="{{ url_for('destinations') }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.2l2.1-2.1a5 5 0 0 0-7.1-7.1L11 5.1"></path><path d="M14 11a5 5 0 0 0-7.1-.2l-2.1 2.1a5 5 0 0 0 7.1 7.1L13 18.9"></path></svg>
+            存储目的地
+          </a>
+          <a class="{{ 'active' if request.endpoint in ['account', 'account_password', 'account_totp_enable', 'account_totp_disable'] else '' }}" href="{{ url_for('account') }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 0 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 0 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 0 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2a2 2 0 0 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z"></path></svg>
+            设置
+          </a>
         </nav>
         <div class="sidebar-footer">
-          <div class="node-id"><span class="nav-icon monitor-icon"></span>本机节点</div>
-          <a href="https://github.com/VectorZhao/vaultpack" target="_blank" rel="noreferrer"><span class="nav-icon info-icon"></span>关于 vaultpack</a>
-          <a href="https://github.com/VectorZhao/vaultpack#readme" target="_blank" rel="noreferrer"><span class="nav-icon doc-icon"></span>使用文档</a>
-          <form method="post" action="{{ url_for('logout') }}"><button class="side-logout"><span class="nav-icon logout-icon"></span>退出登录</button></form>
+          <div class="node-id">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M9 21h6"></path><path d="M12 16v5"></path></svg>
+            本机节点
+          </div>
+          <a href="https://github.com/VectorZhao/vaultpack" target="_blank" rel="noreferrer">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg>
+            关于 vaultpack
+          </a>
+          <a href="https://github.com/VectorZhao/vaultpack#readme" target="_blank" rel="noreferrer">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 3H20v18H6.5A2.5 2.5 0 0 1 4 18.5v-13A2.5 2.5 0 0 1 6.5 3Z"></path><path d="M8 7h8"></path><path d="M8 11h6"></path></svg>
+            使用文档
+          </a>
+          <form method="post" action="{{ url_for('logout') }}">
+            <button class="side-logout">
+              <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17 15 12l-5-5"></path><path d="M15 12H3"></path><path d="M14 4h4a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-4"></path></svg>
+              退出登录
+            </button>
+          </form>
         </div>
       </aside>
       <div class="workspace">
