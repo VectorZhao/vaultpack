@@ -71,8 +71,19 @@
           <div class="actions">
             <a href="{{ url_for('job_edit', job_id=job.id) }}">编辑</a>
             <form method="post" action="{{ url_for('job_run', job_id=job.id) }}"><button {% if running_run %}disabled{% endif %}>{{ "运行中" if running_run else "立即备份" }}</button></form>
-            <form method="post" action="{{ url_for('job_delete', job_id=job.id) }}" onsubmit="return confirm('删除这个任务？')"><button class="danger">删除</button></form>
+            <button class="danger" type="button" onclick="document.querySelector('#delete-job-{{ job.id }}').showModal()">删除</button>
           </div>
+          <dialog class="confirm-dialog" id="delete-job-{{ job.id }}">
+            <form method="dialog" class="confirm-card">
+              <h2>删除任务「{{ job.name }}」？</h2>
+              <p>删除后不能继续运行这个备份任务，任务配置会被移除。正在运行的任务会阻止删除。</p>
+              <div class="confirm-actions">
+                <button class="secondary" value="cancel">否</button>
+                <button class="danger-confirm" value="confirm" form="delete-job-form-{{ job.id }}">是</button>
+              </div>
+            </form>
+            <form id="delete-job-form-{{ job.id }}" method="post" action="{{ url_for('job_delete', job_id=job.id) }}"></form>
+          </dialog>
         </td>
       </tr>
       {% else %}

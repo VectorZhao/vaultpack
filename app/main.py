@@ -324,8 +324,18 @@ def create_app():
     @app.post("/jobs/<int:job_id>/delete")
     def job_delete(job_id):
         with connect() as conn:
-            conn.execute("DELETE FROM jobs WHERE id = ?", (job_id,))
-        flash("备份任务已删除。", "success")
+            job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+            if not job:
+                abort(404)
+            running = conn.execute(
+                "SELECT 1 FROM runs WHERE job_id = ? AND status = 'running' LIMIT 1",
+                (job_id,),
+            ).fetchone()
+            if running:
+                flash("这个任务正在运行中，不能删除。", "error")
+            else:
+                conn.execute("DELETE FROM jobs WHERE id = ?", (job_id,))
+                flash("备份任务已删除。", "success")
         return redirect(url_for("index"))
 
     @app.get("/account")
