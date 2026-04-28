@@ -43,18 +43,18 @@
       {% for job in jobs %}
       {% set running_run = running_by_job.get(job.id) %}
       <tr>
-        <td class="job-name">{{ job.name }}</td>
-        <td class="path-cell">{{ job.source_path|source_paths }}</td>
-        <td>
+        <td class="job-name" data-label="名称">{{ job.name }}</td>
+        <td class="path-cell" data-label="目录">{{ job.source_path|source_paths }}</td>
+        <td data-label="目的地">
           {% if job.destination_base_url %}
             WebDAV #{{ job.destination_id }}
           {% else %}
             <span class="status failed">未配置</span>
           {% endif %}
         </td>
-        <td><code>{{ job.cron_expr }}</code></td>
-        <td>{{ job.retention_count }} 个版本</td>
-        <td>
+        <td data-label="备份时间"><code>{{ job.cron_expr }}</code></td>
+        <td data-label="保留">{{ job.retention_count }} 个版本</td>
+        <td data-label="状态">
           {% if running_run %}
             <span class="status running">运行中</span>
             <div class="row-progress">
@@ -67,7 +67,7 @@
             <span class="status {{ job.last_status or 'idle' }}">{{ {"success": "成功", "failed": "失败"}.get(job.last_status, "未运行") }}</span>
           {% endif %}
         </td>
-        <td class="job-actions">
+        <td class="job-actions" data-label="操作">
           <div class="actions">
             <a href="{{ url_for('job_edit', job_id=job.id) }}">编辑</a>
             <form method="post" action="{{ url_for('job_run', job_id=job.id) }}"><button {% if running_run %}disabled{% endif %}>{{ "运行中" if running_run else "立即备份" }}</button></form>
@@ -91,11 +91,11 @@
     <tbody>
       {% for run in runs %}
       <tr>
-        <td>{{ run.job_name }}</td>
-        <td>{{ run.started_at|time }}</td>
-        <td>{{ run.finished_at|time }}</td>
-        <td><span class="status {{ run.status }}">{{ {"success": "成功", "failed": "失败", "running": "运行中"}.get(run.status, run.status) }}</span></td>
-        <td class="run-message">{{ run.message or run.archive_name or "-" }}</td>
+        <td data-label="任务">{{ run.job_name }}</td>
+        <td data-label="开始">{{ run.started_at|time }}</td>
+        <td data-label="结束">{{ run.finished_at|time }}</td>
+        <td data-label="状态"><span class="status {{ run.status }}">{{ {"success": "成功", "failed": "失败", "running": "运行中"}.get(run.status, run.status) }}</span></td>
+        <td class="run-message" data-label="信息">{{ run.message or run.archive_name or "-" }}</td>
       </tr>
       {% else %}
       <tr><td colspan="5" class="empty">暂无运行记录。</td></tr>
