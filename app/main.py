@@ -20,7 +20,7 @@ from .backup import (
     run_job,
     serialize_source_paths,
 )
-from .config import SECRET_KEY, SOURCE_ROOT
+from .config import APP_TIMEZONE, SECRET_KEY, SOURCE_ROOT, TIMEZONE_NAME
 from .db import connect, init_db, utc_now_iso
 from .webdav import WebDAVClient, WebDAVConfig
 
@@ -33,6 +33,10 @@ def create_app():
     app.jinja_env.filters["time"] = format_time
     app.jinja_env.filters["source_paths"] = format_source_paths
     app.jinja_env.filters["progress_percent"] = progress_percent
+
+    @app.context_processor
+    def inject_app_context():
+        return {"backup_timezone": TIMEZONE_NAME}
 
     scheduler = BackgroundScheduler(daemon=True)
     scheduler.add_job(run_due_jobs, "interval", minutes=1, id="run_due_jobs", replace_existing=True)
@@ -508,7 +512,7 @@ def format_time(value):
     try:
         dt = datetime.fromisoformat(value)
         if dt.tzinfo:
-            dt = dt.astimezone()
+            dt = dt.astimezone(APP_TIMEZONE)
         return dt.strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return value

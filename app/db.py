@@ -2,9 +2,8 @@ import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
 
-from apscheduler.triggers.cron import CronTrigger
-
 from .config import DATA_DIR, DB_PATH
+from .schedule import next_run_from_cron
 
 
 SCHEMA = """
@@ -139,18 +138,15 @@ def _migrate_jobs_cron(conn):
 
 
 def _refresh_job_next_runs(conn):
-    now = datetime.now(timezone.utc)
     for job in conn.execute("SELECT id, cron_expr FROM jobs WHERE enabled = 1").fetchall():
         try:
-            trigger = CronTrigger.from_crontab(job["cron_expr"], timezone=timezone.utc)
-            next_run = trigger.get_next_fire_time(None, now)
+            next_run = next_run_from_cron(job["cron_expr"])
         except Exception:
             continue
-        if next_run:
-            conn.execute(
-                "UPDATE jobs SET next_run_at = ? WHERE id = ?",
-                (next_run.replace(microsecond=0).isoformat(), job["id"]),
-            )
+        conn.execute(
+            "UPDATE jobs SET next_run_at = ? WHERE id = ?",
+            (next_run, job["id"]),
+        )
 
 
 def _migrate_run_progress(conn):

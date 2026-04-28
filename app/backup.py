@@ -5,10 +5,9 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from apscheduler.triggers.cron import CronTrigger
-
 from .config import SOURCE_ROOT, WORK_DIR
 from .db import connect, utc_now_iso
+from .schedule import next_run_from_cron
 from .webdav import WebDAVClient, WebDAVConfig
 
 
@@ -278,15 +277,6 @@ def format_bytes(size):
         if size < 1024 or unit == units[-1]:
             return f"{size:.0f} {unit}" if unit == "B" else f"{size:.2f} {unit}"
         size /= 1024
-
-
-def next_run_from_cron(cron_expr, base_time=None):
-    base_time = base_time or datetime.now(timezone.utc)
-    trigger = CronTrigger.from_crontab(cron_expr, timezone=timezone.utc)
-    next_run = trigger.get_next_fire_time(None, base_time)
-    if not next_run:
-        raise ValueError("cron 表达式无法计算下次运行时间")
-    return next_run.replace(microsecond=0).isoformat()
 
 
 def _finish_run(run_id, status, message, archive_name):

@@ -21,7 +21,10 @@
       <input type="hidden" name="source_path" value='{{ selected_paths|tojson }}'>
       <label>备份目录<input id="source-summary" value="" readonly required></label>
       <div class="selected-list" id="selected-list"></div>
-      <label>备份时间<input name="cron_expr" value="{{ job.cron_expr if job else '0 2 * * *' }}" placeholder="0 2 * * *" required></label>
+      <label>备份时间
+        <span class="field-hint">按 {{ backup_timezone }} 解释 cron 表达式，例如 0 2 * * * 表示每天 02:00。</span>
+        <input name="cron_expr" value="{{ job.cron_expr if job else '0 2 * * *' }}" placeholder="0 2 * * *" required>
+      </label>
       <label>保留版本数量<input name="retention_count" type="number" min="1" value="{{ job.retention_count if job else 5 }}" required></label>
       <label class="check"><input name="enabled" type="checkbox" {% if not job or job.enabled %}checked{% endif %}> 启用任务</label>
       <button class="primary" {% if not destinations %}disabled{% endif %}>{{ "保存" if job else "创建" }}</button>
