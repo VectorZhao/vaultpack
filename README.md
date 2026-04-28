@@ -2,6 +2,13 @@
 
 一个可用 Docker 部署的文件夹备份服务。网页端可以配置 WebDAV、选择容器内挂载目录、设置备份周期和保留版本数。每次备份会把目标目录打成 `.tar.gz` 并上传到 WebDAV，超过保留数量后删除最旧版本。
 
+Docker 镜像：
+
+```text
+vectorzhao/vaultpack:1.0.0
+vectorzhao/vaultpack:latest
+```
+
 ## 功能
 
 - WebDAV 地址、账号、密码和远端目录配置
@@ -23,12 +30,12 @@ volumes:
   - /path/to/your/server/folder:/backup-source:ro
 ```
 
-把 `/path/to/your/server/folder` 换成宿主机上需要暴露给容器选择的目录。然后修改 `BACKUP_SECRET_KEY` 为随机长字符串。`TZ` 用来指定 Web 中 cron 表达式的执行时区，不设置时默认使用 `Asia/Shanghai`。
+把 `/path/to/your/server/folder` 换成宿主机上需要暴露给容器选择的目录。然后修改 `BACKUP_SECRET_KEY`、`ADMIN_USERNAME` 和 `ADMIN_PASSWORD`。`TZ` 用来指定 Web 中 cron 表达式的执行时区，不设置时默认使用 `Asia/Shanghai`。
 
 启动：
 
 ```bash
-docker compose up -d --build
+docker compose up -d
 ```
 
 访问：
@@ -37,7 +44,7 @@ docker compose up -d --build
 http://服务器IP:18080
 ```
 
-首次打开会要求创建管理员账号。之后进入 WebDAV 页面保存连接信息，再创建备份任务。
+如果配置了 `ADMIN_PASSWORD`，首次启动会自动创建管理员账号；否则首次打开会要求创建管理员账号。之后进入 WebDAV 页面保存连接信息，再创建备份任务。
 
 ## 挂载目录说明
 
@@ -72,11 +79,29 @@ http://服务器IP:18080
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
 | `BACKUP_SECRET_KEY` | `dev-change-me` | Flask 会话密钥，生产环境必须修改 |
+| `ADMIN_USERNAME` | `admin` | 首次启动时自动创建的管理员用户名，仅在数据库还没有用户且设置了 `ADMIN_PASSWORD` 时生效 |
+| `ADMIN_PASSWORD` | 未设置 | 首次启动时自动创建的管理员密码，至少 8 位；留空则走网页初始化 |
 | `BACKUP_DATA_DIR` | `/data` | 配置和数据库目录 |
 | `BACKUP_SOURCE_ROOT` | `/backup-source` | 允许在网页中选择的备份根目录 |
 | `BACKUP_WORK_DIR` | `/tmp/backup-work` | 压缩临时目录 |
 | `TZ` | `Asia/Shanghai` | 容器时区，也是 Web 中 cron 表达式的执行时区 |
 | `BACKUP_TIMEZONE` | 未设置 | 可选，优先级高于 `TZ`，用于单独指定 Web cron 执行时区 |
+
+## Docker Hub 发布
+
+GitHub Actions 会在 `main` 分支推送时构建并推送多架构镜像：
+
+- `linux/amd64`
+- `linux/arm64`
+
+需要在 GitHub 仓库 Secrets 中配置：
+
+| Secret | 说明 |
+| --- | --- |
+| `DOCKERHUB_USERNAME` | Docker Hub 用户名 |
+| `DOCKERHUB_TOKEN` | Docker Hub Access Token 或密码 |
+
+推送的标签为 `vectorzhao/vaultpack:1.0.0` 和 `vectorzhao/vaultpack:latest`。
 
 ## 备份命名和保留策略
 

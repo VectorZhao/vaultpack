@@ -20,13 +20,14 @@ from .backup import (
     run_job,
     serialize_source_paths,
 )
-from .config import APP_TIMEZONE, SECRET_KEY, SOURCE_ROOT, TIMEZONE_NAME
+from .config import ADMIN_PASSWORD, ADMIN_USERNAME, APP_TIMEZONE, SECRET_KEY, SOURCE_ROOT, TIMEZONE_NAME
 from .db import connect, init_db, utc_now_iso
 from .webdav import WebDAVClient, WebDAVConfig
 
 
 def create_app():
     init_db()
+    _bootstrap_admin_from_env()
     app = Flask(__name__)
     app.secret_key = SECRET_KEY
     app.permanent_session_lifetime = timedelta(days=7)
@@ -413,6 +414,19 @@ def create_app():
 
 def _has_user():
     return _get_user() is not None
+
+
+def _bootstrap_admin_from_env():
+    if _has_user() or not ADMIN_PASSWORD:
+        return
+    username = ADMIN_USERNAME.strip() or "admin"
+    if len(ADMIN_PASSWORD) < 8:
+        raise RuntimeError("ADMIN_PASSWORD must be at least 8 characters")
+    with connect() as conn:
+        conn.execute(
+            "INSERT INTO users(id, username, password_hash) VALUES(1, ?, ?)",
+            (username, generate_password_hash(ADMIN_PASSWORD)),
+        )
 
 
 def _get_user():

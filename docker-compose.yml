@@ -1,6 +1,6 @@
 services:
   webdav-backup:
-    build: .
+    image: vectorzhao/vaultpack:1.0.0
     container_name: webdav-backup
     restart: unless-stopped
     ports:
@@ -9,6 +9,8 @@ services:
       BACKUP_SECRET_KEY: "change-this-secret"
       BACKUP_DATA_DIR: "/data"
       BACKUP_SOURCE_ROOT: "/backup-source"
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "change-this-password"
       TZ: "Asia/Shanghai"
     volumes:
       - ./data:/data
