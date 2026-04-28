@@ -163,7 +163,13 @@ def create_app():
 
     @app.get("/restore")
     def restore():
-        return render_template("placeholder.html", title="恢复", message="恢复功能将在后续版本加入。")
+        return render_template(
+            "placeholder.html",
+            title="恢复",
+            message="恢复功能将在后续版本加入。当前可以在 WebDAV 目的地中查看已上传的备份包。",
+            action_label="返回首页",
+            action_url=url_for("index"),
+        )
 
     @app.get("/about")
     def about():

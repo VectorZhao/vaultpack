@@ -1013,6 +1013,47 @@ th {
   width: min(640px, 100%);
   margin: 72px auto;
   text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.empty-state h1 {
+  margin-bottom: 0;
+}
+
+.empty-state p {
+  max-width: 440px;
+  line-height: 1.65;
+}
+
+.empty-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #5e98ff, #2f66e8);
+  box-shadow: 0 10px 24px rgba(47, 102, 232, 0.22);
+  position: relative;
+}
+
+.empty-icon::before,
+.empty-icon::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+}
+
+.empty-icon::before {
+  inset: 12px;
+  border: 2px solid #fff;
+}
+
+.empty-icon::after {
+  width: 10px;
+  height: 2px;
+  left: 18px;
+  top: 22px;
+  background: #fff;
 }
 
 .about-page {
