@@ -1455,22 +1455,39 @@ th {
 
   .job-actions {
     padding-left: 0;
+    align-items: center;
   }
 
   .actions {
-    justify-content: flex-start;
-    flex-wrap: wrap;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    align-items: center;
+    justify-content: stretch;
   }
 
   .actions a,
   .actions button,
   .actions form {
-    flex: 1 1 86px;
+    min-width: 0;
   }
 
   .actions a,
   .actions button {
     width: 100%;
+    min-height: 34px;
+    padding: 6px 8px;
+  }
+
+  .actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--text);
   }
 
   .run-message {
@@ -1579,5 +1596,11 @@ th {
 
   .tree-row {
     padding-left: min(calc(var(--depth) * 10px), 30px);
+  }
+}
+
+@media (max-width: 360px) {
+  .actions {
+    grid-template-columns: 1fr;
   }
 }
