@@ -851,6 +851,7 @@ th {
 .settings-page {
   display: grid;
   gap: 18px;
+  width: min(1010px, 100%);
 }
 
 .settings-head {
@@ -878,7 +879,7 @@ th {
 
 .settings-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1.08fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
   align-items: start;
 }
@@ -889,10 +890,6 @@ th {
   border-radius: 12px;
   padding: 22px 24px;
   box-shadow: var(--shadow);
-}
-
-.profile-card {
-  max-width: 760px;
 }
 
 .settings-card-head {
@@ -912,7 +909,7 @@ th {
 }
 
 .compact-form {
-  grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) auto;
+  grid-template-columns: minmax(240px, 1fr) minmax(240px, 1fr) auto;
   align-items: end;
 }
 
