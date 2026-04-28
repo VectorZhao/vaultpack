@@ -1,4 +1,4 @@
-# WebDAV Backup
+# vaultpack
 
 一个可用 Docker 部署的文件夹备份服务。网页端可以配置 WebDAV、选择容器内挂载目录、设置备份周期和保留版本数。每次备份会把目标目录打成 `.tar.gz` 并上传到 WebDAV，超过保留数量后删除最旧版本。
 
