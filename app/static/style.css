@@ -2761,3 +2761,636 @@ button.danger-confirm:not(:disabled):active {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 760px) {
+  html,
+  body {
+    width: 100%;
+    overflow-x: hidden;
+    font-size: 14px;
+  }
+
+  .app-shell {
+    display: flex;
+    min-width: 0;
+    min-height: 100vh;
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    gap: 10px;
+    padding: 10px 12px;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--sidebar) 96%, transparent), var(--sidebar)),
+      var(--sidebar);
+  }
+
+  .sidebar-brand {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) 36px;
+    gap: 10px;
+    min-height: 36px;
+  }
+
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+
+  .brand-name,
+  .topbar-title,
+  .side-nav a,
+  h1 {
+    font-size: 15px;
+  }
+
+  h1 {
+    margin-bottom: 10px;
+  }
+
+  h2,
+  .settings-card-head h2,
+  .browser h2 {
+    font-size: 14px;
+  }
+
+  .theme-toggle {
+    width: 36px;
+    min-height: 36px;
+  }
+
+  .side-nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .side-nav a {
+    flex: initial;
+    min-height: 38px;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 7px;
+    border: 1px solid transparent;
+    font-size: 14px;
+    scroll-snap-align: start;
+  }
+
+  .brand-name,
+  .topbar-title,
+  h1 {
+    font-size: 14px;
+  }
+
+  .sidebar-footer {
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border-top: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .sidebar-footer::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar-footer .node-id,
+  .sidebar-footer .app-version {
+    display: none;
+  }
+
+  .sidebar-footer a,
+  .side-logout {
+    flex: 0 0 auto;
+    min-height: 34px;
+    padding: 7px 10px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .side-nav a.active {
+    border-color: color-mix(in srgb, var(--primary) 16%, var(--line));
+  }
+
+  .nav-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .workspace {
+    min-width: 0;
+    display: block;
+  }
+
+  .topbar {
+    position: static;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .topbar-main {
+    gap: 4px;
+  }
+
+  .topbar-title-row {
+    gap: 8px;
+  }
+
+  .topbar-subtitle {
+    max-width: none;
+    font-size: 12px;
+    white-space: normal;
+  }
+
+  .topbar-subtitle span + span::before {
+    padding: 0 7px;
+  }
+
+  .topbar-actions {
+    justify-content: end;
+  }
+
+  .topbar-actions span,
+  .topbar-divider {
+    display: none;
+  }
+
+  .topbar-actions button {
+    min-height: 36px;
+    padding: 7px 11px;
+    font-size: 14px;
+  }
+
+  main {
+    width: 100%;
+    min-width: 0;
+    padding: 12px;
+  }
+
+  .dashboard-page,
+  .dashboard-section,
+  .settings-page,
+  .runs-page,
+  .jobs-page {
+    gap: 12px;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .metric-card {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 10px;
+    min-height: 92px;
+    padding: 13px;
+  }
+
+  .metric-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .metric-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .metric-label,
+  .metric-card small,
+  .muted-line,
+  .field-hint {
+    font-size: 12px;
+  }
+
+  .metric-card strong {
+    font-size: 15px;
+  }
+
+  .metric-card small {
+    margin-top: 5px;
+    line-height: 1.35;
+  }
+
+  .console-panel,
+  .panel,
+  .table-panel,
+  .settings-card,
+  .about-card {
+    width: 100%;
+    min-width: 0;
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .section-head {
+    display: grid;
+    gap: 12px;
+  }
+
+  .section-head p {
+    margin-top: 5px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .section-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .section-actions .button,
+  .section-head .button,
+  .primary,
+  .secondary {
+    width: 100%;
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  .jobs-console {
+    padding: 14px;
+  }
+
+  .table-shell,
+  .table-shell.compact,
+  .dashboard-table-shell {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    display: block;
+    overflow: visible;
+    padding-top: 8px;
+  }
+
+  .dashboard-table,
+  .jobs-console .dashboard-table,
+  .runs-table,
+  .nodes-table,
+  .job-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: auto;
+  }
+
+  table thead {
+    display: none;
+  }
+
+  table,
+  tbody,
+  tr,
+  td {
+    display: block;
+    width: 100%;
+  }
+
+  tbody {
+    display: grid;
+    gap: 10px;
+  }
+
+  tr {
+    padding: 12px;
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--soft) 72%, var(--panel));
+  }
+
+  td,
+  .dashboard-table td,
+  .jobs-console .dashboard-table td,
+  .runs-table td,
+  .nodes-table td,
+  .job-table td {
+    min-height: 0;
+    height: auto;
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 13px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  td:last-child {
+    border-bottom: 0;
+  }
+
+  td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 750;
+  }
+
+  td.empty,
+  td[colspan] {
+    display: block;
+    text-align: center;
+  }
+
+  td.empty::before,
+  td[colspan]::before {
+    content: none;
+  }
+
+  .task-title {
+    margin-bottom: 7px;
+  }
+
+  .jobs-console .dashboard-table td > strong,
+  .task-title strong,
+  .nodes-table td strong {
+    font-size: 13px;
+  }
+
+  .source-chip-list {
+    gap: 5px;
+    margin-top: 7px;
+  }
+
+  .source-chip-list span,
+  .task-enabled,
+  .mini-status {
+    min-height: 20px;
+    padding: 2px 7px;
+    font-size: 11px;
+  }
+
+  .task-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .task-actions button,
+  .more-menu summary {
+    min-height: 36px;
+    font-size: 13px;
+  }
+
+  .more-menu.is-floating > div,
+  .more-menu.is-floating.open-up > div {
+    width: min(184px, calc(100vw - 24px));
+  }
+
+  .runs-table td:nth-child(2),
+  .runs-table td:nth-child(3),
+  .runs-table td:nth-child(4),
+  .runs-table td:nth-child(5),
+  .runs-table td:nth-child(6),
+  .runs-table td:nth-child(7),
+  .nodes-table td:nth-child(2),
+  .nodes-table td:nth-child(5),
+  .nodes-table td:nth-child(6),
+  .nodes-table td:nth-child(7) {
+    white-space: normal;
+  }
+
+  .dashboard-bottom-grid,
+  .settings-grid,
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .health-card,
+  .info-card,
+  .quick-card {
+    min-height: 0;
+  }
+
+  .health-layout {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 14px;
+    justify-items: stretch;
+  }
+
+  .health-ring {
+    width: 96px;
+    height: 96px;
+  }
+
+  .quick-card a {
+    min-height: 38px;
+  }
+
+  .settings-head {
+    display: grid;
+    gap: 10px;
+  }
+
+  .security-badge {
+    justify-self: start;
+  }
+
+  .theme-options,
+  .compact-form,
+  .totp-setup {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-option {
+    min-height: 72px;
+    padding: 12px;
+  }
+
+  .settings-form button {
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .split {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .form {
+    gap: 12px;
+  }
+
+  input,
+  select,
+  button,
+  .button {
+    max-width: 100%;
+  }
+
+  input,
+  select {
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  .browser {
+    min-width: 0;
+  }
+
+  .tree-toolbar {
+    display: grid;
+    gap: 9px;
+  }
+
+  .tree-tools {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .tree {
+    max-height: 50vh;
+    padding: 8px;
+  }
+
+  .tree-row {
+    grid-template-columns: 28px minmax(0, 1fr);
+    padding-left: min(calc(var(--depth) * 12px), 36px);
+  }
+
+  .tree-name {
+    min-height: 34px;
+  }
+
+  .selected-list {
+    gap: 6px;
+  }
+
+  .selected-chip {
+    max-width: 100%;
+  }
+
+  .destination-page,
+  .destination-picker {
+    width: 100%;
+    margin: 0;
+  }
+
+  .destination-add,
+  .destination-card,
+  .provider-option {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .destination-actions,
+  .destination-card .button,
+  .provider-option .choose-button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .destination-actions {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .help-box,
+  .notice,
+  .flash {
+    padding: 11px 12px;
+    font-size: 13px;
+  }
+
+  .copy-command code {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .about-hero {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .about-hero p {
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .about-actions,
+  .form-actions,
+  .confirm-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .about-actions .button,
+  .form-actions .button,
+  .form-actions button,
+  .form-actions form,
+  .confirm-actions button {
+    width: 100%;
+  }
+
+  .confirm-dialog {
+    width: min(360px, calc(100vw - 24px));
+  }
+
+  .confirm-card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .side-nav a {
+    font-size: 13px;
+  }
+
+  .brand-name,
+  .topbar-title,
+  h1 {
+    font-size: 13px;
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-actions,
+  .task-actions,
+  .tree-tools {
+    grid-template-columns: 1fr;
+  }
+
+  td,
+  .dashboard-table td,
+  .jobs-console .dashboard-table td,
+  .runs-table td,
+  .nodes-table td,
+  .job-table td {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+
+  .health-layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .side-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
