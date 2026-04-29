@@ -35,7 +35,7 @@
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10.5V20h13v-9.5"></path><path d="M9.5 20v-6h5v6"></path></svg>
             首页
           </a>
-          <a class="{{ 'active' if request.endpoint in ['job_new', 'job_create', 'job_edit', 'job_update'] else '' }}" href="{{ url_for('job_new') }}">
+          <a class="{{ 'active' if request.endpoint in ['jobs', 'job_new', 'job_create', 'job_edit', 'job_update'] else '' }}" href="{{ url_for('jobs') }}">
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="3"></ellipse><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"></path><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"></path></svg>
             备份任务
           </a>
@@ -191,6 +191,52 @@
           media.addListener(onSystemThemeChange);
         }
       }
+    })();
+
+    (() => {
+      const menus = document.querySelectorAll(".more-menu");
+      const closeOtherMenus = (activeMenu) => {
+        menus.forEach((menu) => {
+          if (menu !== activeMenu) menu.removeAttribute("open");
+        });
+      };
+      const placeMenu = (menu) => {
+        menu.classList.remove("open-up");
+        menu.classList.add("is-floating");
+        const panel = menu.querySelector(":scope > div");
+        if (!panel) return;
+        const summaryRect = menu.querySelector("summary").getBoundingClientRect();
+        const width = panel.offsetWidth || 132;
+        const height = panel.offsetHeight || 120;
+        let left = summaryRect.right - width;
+        left = Math.min(left, window.innerWidth - width - 12);
+        left = Math.max(12, left);
+        let top = summaryRect.bottom + 6;
+        if (top + height > window.innerHeight - 12 && summaryRect.top > height + 18) {
+          top = summaryRect.top - height - 6;
+          menu.classList.add("open-up");
+        }
+        menu.style.setProperty("--menu-left", `${left}px`);
+        menu.style.setProperty("--menu-top", `${Math.max(12, top)}px`);
+      };
+      menus.forEach((menu) => {
+        menu.addEventListener("toggle", () => {
+          if (!menu.open) {
+            menu.classList.remove("open-up");
+            menu.classList.remove("is-floating");
+            menu.style.removeProperty("--menu-left");
+            menu.style.removeProperty("--menu-top");
+            return;
+          }
+          closeOtherMenus(menu);
+          requestAnimationFrame(() => placeMenu(menu));
+        });
+      });
+      document.addEventListener("click", (event) => {
+        if (event.target.closest(".more-menu")) return;
+        closeOtherMenus(null);
+      });
+      window.addEventListener("resize", () => closeOtherMenus(null));
     })();
   </script>
 </body>

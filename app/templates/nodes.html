@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="dashboard-section">
-  <section class="console-panel runs-console">
+  <section class="console-panel runs-console nodes-console">
     <div class="section-head">
       <div>
         <h1>节点</h1>
@@ -22,7 +22,7 @@
     </div>
 
     <div class="table-shell compact dashboard-table-shell">
-      <table class="dashboard-table runs-table">
+      <table class="dashboard-table nodes-table">
         <thead>
           <tr>
             <th>节点</th>
@@ -37,13 +37,13 @@
         <tbody>
           {% for node in nodes %}
             <tr>
-              <td><strong>{{ node.name }}</strong></td>
-              <td>{{ "本机" if node.mode == "local" else "Agent" }}</td>
-              <td>{{ node.hostname or "-" }}</td>
-              <td>{{ node.source_root }}</td>
-              <td><span class="status {{ 'success' if node.status == 'online' else 'idle' }}">{{ "在线" if node.status == "online" else "离线" }}</span></td>
-              <td>{{ node.version or "-" }}</td>
-              <td>{{ node.last_seen_at|time }}</td>
+              <td data-label="节点"><strong>{{ node.name }}</strong></td>
+              <td data-label="类型">{{ "本机" if node.mode == "local" else "Agent" }}</td>
+              <td data-label="主机名">{{ node.hostname or "-" }}</td>
+              <td data-label="挂载根目录">{{ node.source_root }}</td>
+              <td data-label="状态"><span class="status {{ 'success' if node.status == 'online' else 'idle' }}">{{ "在线" if node.status == "online" else "离线" }}</span></td>
+              <td data-label="版本">{{ node.version or "-" }}</td>
+              <td data-label="最后心跳">{{ node.last_seen_at|time }}</td>
             </tr>
           {% else %}
             <tr><td colspan="7" class="empty">暂无节点。</td></tr>

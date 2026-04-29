@@ -120,13 +120,7 @@ def create_app():
     def index():
         _mark_stale_nodes()
         with connect() as conn:
-            jobs = conn.execute(
-                "SELECT jobs.*, webdav_config.base_url AS destination_base_url, "
-                "webdav_config.remote_dir AS destination_remote_dir, nodes.name AS node_name, nodes.mode AS node_mode "
-                "FROM jobs LEFT JOIN webdav_config ON webdav_config.id = jobs.destination_id "
-                "LEFT JOIN nodes ON nodes.id = jobs.node_id "
-                "ORDER BY jobs.id DESC"
-            ).fetchall()
+            all_jobs = _fetch_jobs_with_meta(conn)
             cfg = conn.execute("SELECT * FROM webdav_config ORDER BY id LIMIT 1").fetchone()
             configs = conn.execute("SELECT * FROM webdav_config ORDER BY id").fetchall()
             runs = conn.execute(
@@ -143,15 +137,27 @@ def create_app():
         active_run = running_runs[0] if running_runs else None
         return render_template(
             "index.html",
-            jobs=jobs,
+            jobs=all_jobs[:3],
             cfg=cfg,
             runs=runs,
             running_by_job=running_by_job,
             active_run=active_run,
-            dashboard=_dashboard_context(jobs, runs, running_runs, configs),
+            dashboard=_dashboard_context(all_jobs, runs, running_runs, configs),
             configs=configs,
             source_root=SOURCE_ROOT,
         )
+
+    @app.get("/jobs")
+    def jobs():
+        _mark_stale_nodes()
+        with connect() as conn:
+            jobs = _fetch_jobs_with_meta(conn)
+            running_runs = conn.execute(
+                "SELECT runs.*, jobs.name AS job_name, nodes.name AS node_name FROM runs "
+                "JOIN jobs ON jobs.id = runs.job_id LEFT JOIN nodes ON nodes.id = runs.node_id "
+                "WHERE runs.status = 'running' ORDER BY runs.started_at DESC"
+            ).fetchall()
+        return render_template("jobs.html", jobs=jobs, running_by_job={run["job_id"]: run for run in running_runs})
 
     @app.get("/runs")
     def runs():
@@ -346,7 +352,7 @@ def create_app():
                 ),
             )
         flash("备份任务已创建。", "success")
-        return redirect(url_for("index"))
+        return redirect(url_for("jobs"))
 
     @app.get("/jobs/<int:job_id>/edit")
     def job_edit(job_id):
@@ -384,7 +390,7 @@ def create_app():
                 (*values, request.form.get("enabled") == "on", next_run_from_cron(values[4]), job_id),
             )
         flash("备份任务已更新。", "success")
-        return redirect(url_for("index"))
+        return redirect(url_for("jobs"))
 
     @app.post("/jobs/<int:job_id>/run")
     def job_run(job_id):
@@ -407,7 +413,7 @@ def create_app():
             else:
                 Thread(target=run_job, args=(job_id, run_id), daemon=True).start()
                 flash("手动备份已开始，请查看进度。", "success")
-        return redirect(url_for("index"))
+        return _redirect_next()
 
     @app.post("/jobs/<int:job_id>/toggle")
     def job_toggle(job_id):
@@ -421,7 +427,7 @@ def create_app():
             ).fetchone()
             if running and job["enabled"]:
                 flash("这个任务正在运行中，不能停用。", "error")
-                return redirect(url_for("index"))
+                return _redirect_next()
             next_enabled = not bool(job["enabled"])
             next_run_at = next_run_from_cron(job["cron_expr"]) if next_enabled else None
             conn.execute(
@@ -429,7 +435,7 @@ def create_app():
                 (next_enabled, next_run_at, job_id),
             )
         flash("备份任务已启用。" if next_enabled else "备份任务已停用。", "success")
-        return redirect(url_for("index"))
+        return _redirect_next()
 
     @app.post("/jobs/<int:job_id>/delete")
     def job_delete(job_id):
@@ -446,7 +452,7 @@ def create_app():
             else:
                 conn.execute("DELETE FROM jobs WHERE id = ?", (job_id,))
                 flash("备份任务已删除。", "success")
-        return redirect(url_for("index"))
+        return _redirect_next()
 
     @app.get("/account")
     def account():
@@ -678,6 +684,23 @@ def _get_job(job_id):
         return conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
 
 
+def _fetch_jobs_with_meta(conn):
+    return conn.execute(
+        "SELECT jobs.*, webdav_config.base_url AS destination_base_url, "
+        "webdav_config.remote_dir AS destination_remote_dir, nodes.name AS node_name, nodes.mode AS node_mode "
+        "FROM jobs LEFT JOIN webdav_config ON webdav_config.id = jobs.destination_id "
+        "LEFT JOIN nodes ON nodes.id = jobs.node_id "
+        "ORDER BY jobs.id DESC"
+    ).fetchall()
+
+
+def _redirect_next(default_endpoint="index"):
+    next_url = request.form.get("next", "").strip()
+    if next_url.startswith("/") and not next_url.startswith("//"):
+        return redirect(next_url)
+    return redirect(url_for(default_endpoint))
+
+
 def _get_node(node_id):
     with connect() as conn:
         return conn.execute("SELECT * FROM nodes WHERE id = ?", (node_id,)).fetchone()
@@ -889,6 +912,7 @@ def _topbar_title():
     endpoint = request.endpoint or ""
     title_map = {
         "index": "备份控制台",
+        "jobs": "备份任务",
         "job_new": "新建备份",
         "job_create": "新建备份",
         "job_edit": "编辑备份",

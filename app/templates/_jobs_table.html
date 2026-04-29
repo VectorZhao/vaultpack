@@ -1,0 +1,114 @@
+<div class="table-shell dashboard-table-shell">
+  <table class="dashboard-table">
+    <thead>
+      <tr>
+        <th>任务名称</th>
+        <th>节点</th>
+        <th>源目录</th>
+        <th>存储目标</th>
+        <th>计划</th>
+        <th>保留策略</th>
+        <th>状态</th>
+        <th>最近运行</th>
+        <th>下一次运行</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for job in jobs %}
+        {% set running_run = running_by_job.get(job.id) %}
+        {% set source_info = job.source_path|source_chips %}
+        <tr>
+          <td class="task-name" data-label="任务名称">
+            <div class="task-title"><span class="task-dot {{ 'failed' if job.last_status == 'failed' else '' }}"></span><strong>{{ job.name }}</strong></div>
+            <span class="task-enabled {{ 'off' if not job.enabled else '' }}">{{ "启用" if job.enabled else "停用" }}</span>
+          </td>
+          <td data-label="节点">
+            <strong>{{ job.node_name or "local" }}</strong>
+            <small class="muted-line">{{ "本机节点" if job.node_mode == "local" else "远程 Agent" }}</small>
+          </td>
+          <td data-label="源目录">
+            <strong>{{ job.source_path|source_count }}</strong>
+            <div class="source-chip-list">
+              {% for chip in source_info.chips %}
+                <span>{{ chip }}</span>
+              {% endfor %}
+              {% if source_info.extra %}
+                <span>+{{ source_info.extra }}</span>
+              {% endif %}
+            </div>
+          </td>
+          <td data-label="存储目标">
+            {% if job.destination_base_url %}
+              <strong>WebDAV #{{ job.destination_id }}</strong>
+              <span class="mini-status">正常</span>
+              <small class="muted-line">{{ job.destination_remote_dir }}</small>
+            {% else %}
+              <span class="status failed">未配置</span>
+            {% endif %}
+          </td>
+          <td data-label="计划">
+            <strong>{{ job.cron_expr|cron_label }}</strong>
+            <small class="muted-line">cron: {{ job.cron_expr }}</small>
+          </td>
+          <td data-label="保留策略">
+            <strong>保留 {{ job.retention_count }} 个版本</strong>
+            <small class="muted-line">按时间清理</small>
+          </td>
+          <td data-label="状态">
+            {% if running_run %}
+              <span class="status running">运行中</span>
+              <div class="row-progress">
+                <span>{{ running_run.progress_label or "正在运行..." }}</span>
+                <div class="progress-track mini"><div class="progress-bar" style="width: {{ running_run|progress_percent }}%"></div></div>
+              </div>
+            {% else %}
+              <span class="status {{ job.last_status or 'idle' }}">{{ {"success": "成功", "failed": "失败"}.get(job.last_status, "未运行") }}</span>
+            {% endif %}
+          </td>
+          <td data-label="最近运行">
+            <span>{{ job.last_run_at|time }}</span>
+            {% if job.last_message %}<small class="muted-line">{{ job.last_message }}</small>{% endif %}
+          </td>
+          <td data-label="下一次运行">
+            <span>{{ job.next_run_at|time if job.enabled else "已停用" }}</span>
+          </td>
+          <td class="job-actions" data-label="操作">
+            <div class="task-actions">
+              <form method="post" action="{{ url_for('job_run', job_id=job.id) }}">
+                <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
+                <button {% if running_run %}disabled{% endif %}>{{ "运行中" if running_run else "立即备份" }}</button>
+              </form>
+              <details class="more-menu">
+                <summary>更多</summary>
+                <div>
+                  <a href="{{ url_for('job_edit', job_id=job.id) }}">编辑任务</a>
+                  <form method="post" action="{{ url_for('job_toggle', job_id=job.id) }}">
+                    <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
+                    <button type="submit" {% if running_run and job.enabled %}disabled{% endif %}>{{ "停用任务" if job.enabled else "启用任务" }}</button>
+                  </form>
+                  <button class="danger" type="button" onclick="document.querySelector('#delete-job-{{ job.id }}').showModal()">删除任务</button>
+                </div>
+              </details>
+            </div>
+            <dialog class="confirm-dialog" id="delete-job-{{ job.id }}">
+              <form method="dialog" class="confirm-card">
+                <h2>删除任务「{{ job.name }}」？</h2>
+                <p>删除后不能继续运行这个备份任务，任务配置会被移除。正在运行的任务会阻止删除。</p>
+                <div class="confirm-actions">
+                  <button class="secondary" value="cancel">否</button>
+                  <button class="danger-confirm" value="confirm" form="delete-job-form-{{ job.id }}">是</button>
+                </div>
+              </form>
+              <form id="delete-job-form-{{ job.id }}" method="post" action="{{ url_for('job_delete', job_id=job.id) }}">
+                <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
+              </form>
+            </dialog>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="10" class="empty">还没有备份任务。</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

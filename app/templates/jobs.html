@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="dashboard-section jobs-page">
+  <section class="console-panel jobs-console">
+    <div class="section-head">
+      <div>
+        <h1>备份任务</h1>
+        <p>集中查看、执行和管理所有节点上的备份任务。</p>
+      </div>
+      <div class="section-actions">
+        <a class="button secondary" href="{{ url_for('index') }}#jobs">返回控制台</a>
+        <a class="button primary" href="{{ url_for('job_new') }}">+ 新建任务</a>
+      </div>
+    </div>
+    {% include "_jobs_table.html" %}
+  </section>
+</section>
+{% endblock %}
