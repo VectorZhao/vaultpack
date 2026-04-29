@@ -5,7 +5,7 @@
 Docker 镜像：
 
 ```text
-vectorzhao/vaultpack:2.0.0
+vectorzhao/vaultpack:2.0.1
 vectorzhao/vaultpack:latest
 ```
 
@@ -147,7 +147,7 @@ Agent `/data` 中保存：
 
 ## Docker Hub 发布
 
-GitHub Actions 会在发布 GitHub Release 时构建并推送多架构镜像。Release tag 使用 `v2.0.0` 这类格式时，Docker 镜像会自动去掉开头的 `v`，发布为 `2.0.0`。
+GitHub Actions 会在发布 GitHub Release 时构建并推送多架构镜像。Release tag 使用 `v2.0.1` 这类格式时，Docker 镜像会自动去掉开头的 `v`，发布为 `2.0.1`。
 
 - `linux/amd64`
 - `linux/arm64`
@@ -159,7 +159,7 @@ GitHub Actions 会在发布 GitHub Release 时构建并推送多架构镜像。R
 | `DOCKERHUB_USERNAME` | Docker Hub 用户名 |
 | `DOCKERHUB_TOKEN` | Docker Hub Access Token 或密码 |
 
-例如发布 `v2.0.0` 时，推送的标签为 `vectorzhao/vaultpack:2.0.0` 和 `vectorzhao/vaultpack:latest`。
+例如发布 `v2.0.1` 时，推送的标签为 `vectorzhao/vaultpack:2.0.1` 和 `vectorzhao/vaultpack:latest`。
 
 ## 备份命名和保留策略
 

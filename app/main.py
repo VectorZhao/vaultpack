@@ -551,17 +551,24 @@ def create_app():
         if not node:
             return jsonify({"error": "节点认证失败"}), 401
         _update_node_seen(node["id"], request.get_json(silent=True) or {})
-        with connect() as conn:
-            command = conn.execute(
-                "SELECT * FROM agent_commands WHERE node_id = ? AND status = 'pending' ORDER BY id LIMIT 1",
-                (node["id"],),
-            ).fetchone()
-            if not command:
-                return jsonify({"command": None})
-            conn.execute(
-                "UPDATE agent_commands SET status = 'claimed', claimed_at = ? WHERE id = ?",
-                (utc_now_iso(), command["id"]),
-            )
+        command = None
+        deadline = time.monotonic() + 25
+        while time.monotonic() < deadline:
+            with connect() as conn:
+                command = conn.execute(
+                    "SELECT * FROM agent_commands WHERE node_id = ? AND status = 'pending' ORDER BY id LIMIT 1",
+                    (node["id"],),
+                ).fetchone()
+                if command:
+                    conn.execute(
+                        "UPDATE agent_commands SET status = 'claimed', claimed_at = ? WHERE id = ?",
+                        (utc_now_iso(), command["id"]),
+                    )
+                    break
+            time.sleep(1)
+        if not command:
+            return jsonify({"command": None})
+        _update_node_seen(node["id"])
         return jsonify({
             "command": {
                 "id": command["id"],
@@ -720,8 +727,14 @@ def _update_node_seen(node_id, payload=None):
 
 
 def _mark_stale_nodes():
+    now = utc_now_iso()
     cutoff = (datetime.now(timezone.utc) - timedelta(minutes=2)).replace(microsecond=0).isoformat()
     with connect() as conn:
+        conn.execute(
+            "UPDATE nodes SET status = 'online', hostname = ?, source_root = ?, version = ?, last_seen_at = ? "
+            "WHERE mode = 'local'",
+            (socket.gethostname(), SOURCE_ROOT.as_posix(), APP_VERSION, now),
+        )
         conn.execute(
             "UPDATE nodes SET status = 'offline' WHERE mode = 'agent' AND (last_seen_at IS NULL OR last_seen_at < ?)",
             (cutoff,),
@@ -753,7 +766,7 @@ def _request_agent_dirs(node, path):
             "INSERT INTO agent_commands(node_id, type, payload, status, created_at) VALUES(?, ?, ?, 'pending', ?)",
             (node["id"], "list_dirs", json.dumps(payload, ensure_ascii=False), utc_now_iso()),
         ).lastrowid
-    deadline = time.monotonic() + 12
+    deadline = time.monotonic() + 60
     while time.monotonic() < deadline:
         time.sleep(0.4)
         with connect() as conn:
