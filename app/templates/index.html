@@ -63,7 +63,7 @@
       <div class="section-head">
         <div>
           <h1>备份任务</h1>
-          <p>挂载根目录：{{ source_root }}</p>
+          <p>源目录来自任务所属节点的挂载根目录。</p>
         </div>
         <a class="button primary" href="{{ url_for('job_new') }}">+ 新建任务</a>
       </div>
@@ -73,6 +73,7 @@
           <thead>
             <tr>
               <th>任务名称</th>
+              <th>节点</th>
               <th>源目录</th>
               <th>存储目标</th>
               <th>计划</th>
@@ -91,6 +92,10 @@
                 <td class="task-name" data-label="任务名称">
                   <div class="task-title"><span class="task-dot {{ 'failed' if job.last_status == 'failed' else '' }}"></span><strong>{{ job.name }}</strong></div>
                   <span class="task-enabled {{ 'off' if not job.enabled else '' }}">{{ "启用" if job.enabled else "停用" }}</span>
+                </td>
+                <td data-label="节点">
+                  <strong>{{ job.node_name or "local" }}</strong>
+                  <small class="muted-line">{{ "本机节点" if job.node_mode == "local" else "远程 Agent" }}</small>
                 </td>
                 <td data-label="源目录">
                   <strong>{{ job.source_path|source_count }}</strong>
@@ -168,7 +173,7 @@
                 </td>
               </tr>
             {% else %}
-              <tr><td colspan="9" class="empty">还没有备份任务。</td></tr>
+              <tr><td colspan="10" class="empty">还没有备份任务。</td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -183,11 +188,12 @@
     </div>
     <div class="table-shell compact dashboard-table-shell">
       <table class="dashboard-table runs-table">
-        <thead><tr><th>任务名称</th><th>开始时间</th><th>结束时间</th><th>耗时</th><th>状态</th><th>大小</th><th>文件</th></tr></thead>
+        <thead><tr><th>任务名称</th><th>节点</th><th>开始时间</th><th>结束时间</th><th>耗时</th><th>状态</th><th>大小</th><th>文件</th></tr></thead>
         <tbody>
           {% for run in runs %}
             <tr>
               <td data-label="任务名称">{{ run.job_name }}</td>
+              <td data-label="节点">{{ run.node_name or "local" }}</td>
               <td data-label="开始时间">{{ run.started_at|time }}</td>
               <td data-label="结束时间">{{ run.finished_at|time }}</td>
               <td data-label="耗时">{{ run.started_at|duration(run.finished_at) }}</td>
@@ -196,7 +202,7 @@
               <td class="run-message" data-label="文件">{{ run.archive_name or run.message or "-" }}</td>
             </tr>
           {% else %}
-            <tr><td colspan="7" class="empty">暂无运行记录。</td></tr>
+            <tr><td colspan="8" class="empty">暂无运行记录。</td></tr>
           {% endfor %}
         </tbody>
       </table>

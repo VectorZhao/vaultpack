@@ -2,7 +2,7 @@ import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
 
-from .config import DATA_DIR, DB_PATH
+from .config import DATA_DIR, DB_PATH, SOURCE_ROOT
 from .schedule import next_run_from_cron
 
 
@@ -28,9 +28,24 @@ CREATE TABLE IF NOT EXISTS webdav_config (
     remote_dir TEXT NOT NULL DEFAULT '/backups'
 );
 
+CREATE TABLE IF NOT EXISTS nodes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    hostname TEXT,
+    source_root TEXT NOT NULL DEFAULT '/backup-source',
+    token_hash TEXT,
+    status TEXT NOT NULL DEFAULT 'offline',
+    enabled INTEGER NOT NULL DEFAULT 1,
+    mode TEXT NOT NULL DEFAULT 'agent',
+    version TEXT,
+    last_seen_at TEXT,
+    created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS jobs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    node_id INTEGER,
     destination_id INTEGER,
     source_path TEXT NOT NULL,
     interval_days INTEGER NOT NULL DEFAULT 1,
@@ -42,12 +57,14 @@ CREATE TABLE IF NOT EXISTS jobs (
     last_status TEXT,
     last_message TEXT,
     created_at TEXT NOT NULL,
+    FOREIGN KEY(node_id) REFERENCES nodes(id),
     FOREIGN KEY(destination_id) REFERENCES webdav_config(id)
 );
 
 CREATE TABLE IF NOT EXISTS runs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     job_id INTEGER NOT NULL,
+    node_id INTEGER,
     started_at TEXT NOT NULL,
     finished_at TEXT,
     status TEXT NOT NULL,
@@ -56,7 +73,24 @@ CREATE TABLE IF NOT EXISTS runs (
     progress_total INTEGER NOT NULL DEFAULT 0,
     progress_label TEXT,
     archive_name TEXT,
-    FOREIGN KEY(job_id) REFERENCES jobs(id) ON DELETE CASCADE
+    FOREIGN KEY(job_id) REFERENCES jobs(id) ON DELETE CASCADE,
+    FOREIGN KEY(node_id) REFERENCES nodes(id)
+);
+
+CREATE TABLE IF NOT EXISTS agent_commands (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    node_id INTEGER NOT NULL,
+    run_id INTEGER,
+    type TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL,
+    claimed_at TEXT,
+    finished_at TEXT,
+    error TEXT,
+    result TEXT,
+    FOREIGN KEY(node_id) REFERENCES nodes(id),
+    FOREIGN KEY(run_id) REFERENCES runs(id) ON DELETE CASCADE
 );
 """
 
@@ -71,8 +105,11 @@ def init_db():
         conn.executescript(SCHEMA)
         _migrate_webdav_config(conn)
         _migrate_jobs_destination(conn)
+        _migrate_nodes(conn)
         _migrate_jobs_cron(conn)
         _migrate_run_progress(conn)
+        _migrate_runs_node(conn)
+        _migrate_agent_commands(conn)
         _refresh_job_next_runs(conn)
 
 
@@ -126,6 +163,22 @@ def _migrate_jobs_destination(conn):
         conn.execute("UPDATE jobs SET destination_id = ? WHERE destination_id IS NULL", (default_destination["id"],))
 
 
+def _migrate_nodes(conn):
+    node = conn.execute("SELECT id FROM nodes WHERE mode = 'local' ORDER BY id LIMIT 1").fetchone()
+    if not node:
+        conn.execute(
+            "INSERT INTO nodes(name, hostname, source_root, status, enabled, mode, version, last_seen_at, created_at) "
+            "VALUES('local', 'local', ?, 'online', 1, 'local', NULL, ?, ?)",
+            (SOURCE_ROOT.as_posix(), utc_now_iso(), utc_now_iso()),
+        )
+    local_id = conn.execute("SELECT id FROM nodes WHERE mode = 'local' ORDER BY id LIMIT 1").fetchone()["id"]
+    conn.execute("UPDATE nodes SET source_root = ?, status = 'online' WHERE id = ?", (SOURCE_ROOT.as_posix(), local_id))
+    job_columns = {row["name"] for row in conn.execute("PRAGMA table_info(jobs)").fetchall()}
+    if "node_id" not in job_columns:
+        conn.execute("ALTER TABLE jobs ADD COLUMN node_id INTEGER")
+    conn.execute("UPDATE jobs SET node_id = ? WHERE node_id IS NULL", (local_id,))
+
+
 def _migrate_jobs_cron(conn):
     columns = {row["name"] for row in conn.execute("PRAGMA table_info(jobs)").fetchall()}
     if "cron_expr" in columns:
@@ -157,6 +210,23 @@ def _migrate_run_progress(conn):
         conn.execute("ALTER TABLE runs ADD COLUMN progress_total INTEGER NOT NULL DEFAULT 0")
     if "progress_label" not in columns:
         conn.execute("ALTER TABLE runs ADD COLUMN progress_label TEXT")
+    if "archive_name" not in columns:
+        conn.execute("ALTER TABLE runs ADD COLUMN archive_name TEXT")
+
+
+def _migrate_runs_node(conn):
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(runs)").fetchall()}
+    if "node_id" not in columns:
+        conn.execute("ALTER TABLE runs ADD COLUMN node_id INTEGER")
+    conn.execute(
+        "UPDATE runs SET node_id = (SELECT node_id FROM jobs WHERE jobs.id = runs.job_id) WHERE node_id IS NULL"
+    )
+
+
+def _migrate_agent_commands(conn):
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(agent_commands)").fetchall()}
+    if "result" not in columns:
+        conn.execute("ALTER TABLE agent_commands ADD COLUMN result TEXT")
 
 
 @contextmanager

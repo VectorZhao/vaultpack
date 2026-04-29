@@ -20,4 +20,4 @@ RUN mkdir -p /data /backup-source /tmp/backup-work
 
 EXPOSE 8080
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "4", "--timeout", "3600", "app.main:create_app()"]
+CMD ["sh", "-c", "if [ \"$VAULTPACK_ROLE\" = \"agent\" ]; then python -m app.agent; else gunicorn --bind 0.0.0.0:8080 --workers 1 --threads 4 --timeout 3600 'app.main:create_app()'; fi"]

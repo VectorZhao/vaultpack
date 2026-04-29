@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="dashboard-section">
+  <section class="console-panel runs-console">
+    <div class="section-head">
+      <div>
+        <h1>节点</h1>
+        <p>在每台需要备份的 VPS 上部署 Agent，然后统一创建和调度备份任务。</p>
+      </div>
+      <form method="post" action="{{ url_for('nodes_rotate_enrollment_token') }}">
+        <button class="secondary">重新生成接入令牌</button>
+      </form>
+    </div>
+
+    <div class="help-box">
+      <strong>Agent 部署命令</strong>
+      <p>把下面命令复制到需要备份的 VPS。首次注册成功后，Agent 会在日志里显示长期 token；生产环境建议把长期 token 写入环境变量并移除接入令牌。</p>
+      <code>docker run -d --name vaultpack-agent --restart unless-stopped -e VAULTPACK_ROLE=agent -e PANEL_URL={{ panel_url }} -e AGENT_ENROLL_TOKEN={{ enrollment_token }} -e AGENT_NAME=$(hostname) -v /path/to/backup:/backup-source:ro vectorzhao/vaultpack:latest</code>
+    </div>
+
+    <div class="table-shell compact dashboard-table-shell">
+      <table class="dashboard-table runs-table">
+        <thead>
+          <tr>
+            <th>节点</th>
+            <th>类型</th>
+            <th>主机名</th>
+            <th>挂载根目录</th>
+            <th>状态</th>
+            <th>版本</th>
+            <th>最后心跳</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for node in nodes %}
+            <tr>
+              <td><strong>{{ node.name }}</strong></td>
+              <td>{{ "本机" if node.mode == "local" else "Agent" }}</td>
+              <td>{{ node.hostname or "-" }}</td>
+              <td>{{ node.source_root }}</td>
+              <td><span class="status {{ 'success' if node.status == 'online' else 'idle' }}">{{ "在线" if node.status == "online" else "离线" }}</span></td>
+              <td>{{ node.version or "-" }}</td>
+              <td>{{ node.last_seen_at|time }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="7" class="empty">暂无节点。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
+{% endblock %}

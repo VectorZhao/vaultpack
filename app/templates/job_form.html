@@ -5,6 +5,15 @@
   <div class="split">
     <form method="post" action="{{ url_for('job_update', job_id=job.id) if job else url_for('job_create') }}" class="form">
       <label>任务名称<input name="name" value="{{ job.name if job else '' }}" required></label>
+      <label>节点
+        <select name="node_id" id="node-select" required>
+          {% for node in nodes %}
+            <option value="{{ node.id }}" {% if node.id == selected_node_id %}selected{% endif %}>
+              {{ node.name }}{% if node.mode == "local" %}（本机）{% else %}（{{ node.status }}）{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
       <label>存储目的地
         <select name="destination_id" required {% if not destinations %}disabled{% endif %}>
           {% for destination in destinations %}
@@ -51,6 +60,7 @@
 </section>
 <script>
   const tree = document.querySelector("#source-tree");
+  const nodeSelect = document.querySelector("#node-select");
   const sourceInput = document.querySelector("[name=source_path]");
   const sourceSummary = document.querySelector("#source-summary");
   const selectedList = document.querySelector("#selected-list");
@@ -126,7 +136,7 @@
   async function loadChildren(row) {
     if (row.dataset.loaded === "true") return;
     row.classList.add("loading");
-    const response = await fetch(`/api/source-dirs?path=${encodeURIComponent(row.dataset.path)}`);
+    const response = await fetch(`/api/source-dirs?node_id=${encodeURIComponent(nodeSelect.value)}&path=${encodeURIComponent(row.dataset.path)}`);
     const payload = await response.json();
     row.classList.remove("loading");
     if (!response.ok) throw new Error(payload.error || "目录读取失败");
@@ -202,6 +212,11 @@
 
   document.querySelector("#select-root").addEventListener("click", () => toggleSelected("."));
   document.querySelector("#collapse-tree").addEventListener("click", collapseAll);
+  nodeSelect.addEventListener("change", () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("node_id", nodeSelect.value);
+    window.location.href = url.toString();
+  });
   renderSelected();
 </script>
 {% endblock %}

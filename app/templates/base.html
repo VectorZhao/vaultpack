@@ -43,6 +43,10 @@
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 5v6h6"></path><path d="M12 8v5l3 2"></path></svg>
             恢复
           </a>
+          <a class="{{ 'active' if request.endpoint in ['nodes', 'nodes_rotate_enrollment_token'] else '' }}" href="{{ url_for('nodes') }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="7" rx="2"></rect><rect x="14" y="4" width="7" height="7" rx="2"></rect><rect x="8.5" y="15" width="7" height="7" rx="2"></rect><path d="M10 8h4"></path><path d="M12 11v4"></path></svg>
+            节点
+          </a>
           <a class="{{ 'active' if request.endpoint in ['destinations', 'destination_new', 'webdav_new', 'webdav', 'webdav_detail', 'webdav_post', 'webdav_delete', 'webdav_test', 'webdav_test_config'] else '' }}" href="{{ url_for('destinations') }}">
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.2l2.1-2.1a5 5 0 0 0-7.1-7.1L11 5.1"></path><path d="M14 11a5 5 0 0 0-7.1-.2l-2.1 2.1a5 5 0 0 0 7.1 7.1L13 18.9"></path></svg>
             存储目标
@@ -75,7 +79,7 @@
               退出登录
             </button>
           </form>
-          <div class="app-version">Vaultpack v1.1.0</div>
+          <div class="app-version">Vaultpack v{{ app_version }}</div>
         </div>
       </aside>
       <div class="workspace">
