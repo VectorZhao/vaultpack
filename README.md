@@ -5,7 +5,7 @@
 Docker 镜像：
 
 ```text
-vectorzhao/vaultpack:2.0.6
+vectorzhao/vaultpack:2.1.0
 vectorzhao/vaultpack:latest
 ```
 
@@ -21,6 +21,7 @@ vectorzhao/vaultpack:latest
 - 按任务设置保留版本数，例如只保留最近 5 个包
 - 管理员网页登录
 - 可选 TOTP 二次验证，兼容 Google Authenticator、1Password、Microsoft Authenticator 等
+- PWA 支持，可在手机浏览器中添加到主屏幕并以独立应用窗口使用
 - 支持手动立即备份
 - SQLite 保存配置和运行记录
 
@@ -145,9 +146,13 @@ Agent `/data` 中保存：
 | `AGENT_NAME` | 主机名 | Agent 在面板中显示的节点名称 |
 | `AGENT_POLL_INTERVAL` | `10` | Agent 轮询面板的间隔秒数，最小为 2 |
 
+## PWA 安装
+
+vaultpack 提供 Web App Manifest 和 Service Worker，可在手机浏览器中添加到主屏幕并以独立应用窗口使用。生产环境请通过 HTTPS 访问面板；除 `localhost` 外，主流手机浏览器通常会拒绝在普通 HTTP 页面注册 Service Worker。
+
 ## Docker Hub 发布
 
-GitHub Actions 会在发布 GitHub Release 时构建并推送多架构镜像。Release tag 使用 `v2.0.6` 这类格式时，Docker 镜像会自动去掉开头的 `v`，发布为 `2.0.6`。
+GitHub Actions 会在发布 GitHub Release 时构建并推送多架构镜像。Release tag 使用 `v2.1.0` 这类格式时，Docker 镜像会自动去掉开头的 `v`，发布为 `2.1.0`。
 
 - `linux/amd64`
 - `linux/arm64`
@@ -159,7 +164,7 @@ GitHub Actions 会在发布 GitHub Release 时构建并推送多架构镜像。R
 | `DOCKERHUB_USERNAME` | Docker Hub 用户名 |
 | `DOCKERHUB_TOKEN` | Docker Hub Access Token 或密码 |
 
-例如发布 `v2.0.6` 时，推送的标签为 `vectorzhao/vaultpack:2.0.6` 和 `vectorzhao/vaultpack:latest`。
+例如发布 `v2.1.0` 时，推送的标签为 `vectorzhao/vaultpack:2.1.0` 和 `vectorzhao/vaultpack:latest`。
 
 ## 备份命名和保留策略
 

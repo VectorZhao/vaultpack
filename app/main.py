@@ -11,7 +11,7 @@ from threading import Thread
 import pyotp
 import qrcode
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, abort, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Flask, abort, flash, jsonify, redirect, render_template, request, send_from_directory, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .backup import (
@@ -58,12 +58,23 @@ def create_app():
     def require_login():
         if request.endpoint and request.endpoint.startswith("api_agent_"):
             return
-        if request.endpoint in {"login", "login_post", "setup", "setup_post", "static"}:
+        if request.endpoint in {"login", "login_post", "setup", "setup_post", "static", "web_manifest", "service_worker"}:
             return
         if not _has_user() and request.endpoint != "setup":
             return redirect(url_for("setup"))
         if not session.get("user_id"):
             return redirect(url_for("login"))
+
+    @app.get("/manifest.webmanifest")
+    def web_manifest():
+        return send_from_directory(app.static_folder, "manifest.webmanifest", mimetype="application/manifest+json")
+
+    @app.get("/service-worker.js")
+    def service_worker():
+        response = send_from_directory(app.static_folder, "service-worker.js", mimetype="application/javascript")
+        response.headers["Cache-Control"] = "no-cache"
+        response.headers["Service-Worker-Allowed"] = "/"
+        return response
 
     @app.get("/setup")
     def setup():

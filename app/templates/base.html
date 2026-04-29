@@ -3,8 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="application-name" content="vaultpack">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="vaultpack">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#3378ff">
   <title>vaultpack</title>
   <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+  <link rel="manifest" href="{{ url_for('web_manifest') }}">
   <script>
     (() => {
       const validModes = ["light", "dark", "auto"];
@@ -12,8 +20,10 @@
       const legacyTheme = localStorage.getItem("vaultpack-theme");
       const mode = validModes.includes(savedMode) ? savedMode : (["light", "dark"].includes(legacyTheme) ? legacyTheme : "auto");
       const systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const theme = mode === "auto" ? (systemDark ? "dark" : "light") : mode;
       document.documentElement.dataset.themeMode = mode;
-      document.documentElement.dataset.theme = mode === "auto" ? (systemDark ? "dark" : "light") : mode;
+      document.documentElement.dataset.theme = theme;
+      document.querySelector("meta[name='theme-color']")?.setAttribute("content", theme === "dark" ? "#0d1118" : "#3378ff");
     })();
   </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -160,6 +170,7 @@
         const nextTheme = nextMode === "auto" ? systemTheme() : nextMode;
         root.dataset.themeMode = nextMode;
         root.dataset.theme = nextTheme;
+        document.querySelector("meta[name='theme-color']")?.setAttribute("content", nextTheme === "dark" ? "#0d1118" : "#3378ff");
         if (persist) {
           localStorage.setItem(modeKey, nextMode);
           localStorage.removeItem(legacyKey);
@@ -237,6 +248,13 @@
         closeOtherMenus(null);
       });
       window.addEventListener("resize", () => closeOtherMenus(null));
+    })();
+
+    (() => {
+      if (!("serviceWorker" in navigator)) return;
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+      });
     })();
   </script>
 </body>
