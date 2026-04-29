@@ -1282,6 +1282,43 @@ th {
   color: #0b6f50;
 }
 
+.command-help {
+  display: grid;
+  gap: 10px;
+}
+
+.copy-command {
+  width: 100%;
+  min-height: 0;
+  padding: 12px 13px;
+  display: block;
+  text-align: left;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 62%, var(--soft));
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.copy-command:hover {
+  border-color: color-mix(in srgb, var(--primary) 46%, var(--line));
+  background: color-mix(in srgb, var(--primary) 6%, var(--panel));
+}
+
+.copy-command code {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.65;
+}
+
+.copy-state {
+  min-height: 18px;
+  color: var(--success);
+  font-size: 13px;
+  font-weight: 650;
+}
+
 .destination-page {
   width: min(668px, 100%);
   margin: 36px auto;
@@ -2041,6 +2078,10 @@ button.danger-confirm:not(:disabled):active {
 :root[data-theme="dark"] .help-box code,
 :root[data-theme="dark"] .tree-toolbar strong {
   color: var(--success);
+}
+
+:root[data-theme="dark"] .copy-command {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 :root[data-theme="dark"] .confirm-dialog::backdrop {

@@ -12,10 +12,13 @@
       </form>
     </div>
 
-    <div class="help-box">
+    <div class="help-box command-help">
       <strong>Agent 部署命令</strong>
       <p>把下面命令复制到需要备份的 VPS。首次注册成功后，Agent 会在日志里显示长期 token；生产环境建议把长期 token 写入环境变量并移除接入令牌。</p>
-      <code>docker run -d --name vaultpack-agent --restart unless-stopped -e VAULTPACK_ROLE=agent -e PANEL_URL={{ panel_url }} -e AGENT_ENROLL_TOKEN={{ enrollment_token }} -e AGENT_NAME=$(hostname) -v /path/to/backup:/backup-source:ro vectorzhao/vaultpack:latest</code>
+      <button type="button" class="copy-command" data-copy-target="agent-command" title="点击复制部署命令">
+        <code id="agent-command">docker run -d --name vaultpack-agent --restart unless-stopped -e VAULTPACK_ROLE=agent -e PANEL_URL={{ panel_url }} -e AGENT_ENROLL_TOKEN={{ enrollment_token }} -e AGENT_NAME=$(hostname) -v /path/to/backup:/backup-source:ro vectorzhao/vaultpack:latest</code>
+      </button>
+      <div class="copy-state" id="agent-command-copy-state" aria-live="polite"></div>
     </div>
 
     <div class="table-shell compact dashboard-table-shell">
@@ -50,4 +53,59 @@
     </div>
   </section>
 </section>
+<script>
+  const copyButtons = document.querySelectorAll("[data-copy-target]");
+  const copyState = document.querySelector("#agent-command-copy-state");
+
+  function legacyCopy(text) {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.top = "0";
+    textarea.style.left = "0";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    const copied = document.execCommand("copy");
+    textarea.remove();
+    return copied;
+  }
+
+  async function copyText(text) {
+    if (legacyCopy(text)) return;
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    throw new Error("copy command failed");
+  }
+
+  function selectCommand(target) {
+    const range = document.createRange();
+    range.selectNodeContents(target);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+
+  copyButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      const target = document.getElementById(button.dataset.copyTarget);
+      if (!target) return;
+      try {
+        await copyText(target.textContent.trim());
+        if (copyState) copyState.textContent = "部署命令已复制。";
+        window.setTimeout(() => {
+          if (copyState) copyState.textContent = "";
+        }, 1800);
+      } catch (error) {
+        selectCommand(target);
+        if (copyState) copyState.textContent = "浏览器阻止复制，已选中命令，可按 Ctrl/Cmd+C。";
+      }
+    });
+  });
+</script>
 {% endblock %}
