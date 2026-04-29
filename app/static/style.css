@@ -78,7 +78,7 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   gap: 10px;
   min-height: 42px;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 800;
 }
 
@@ -145,6 +145,7 @@ a { color: inherit; text-decoration: none; }
   padding: 8px 12px;
   border-radius: 9px;
   color: var(--muted);
+  font-size: 16px;
   font-weight: 650;
 }
 
@@ -239,7 +240,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .topbar-title {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 650;
   min-width: 0;
   overflow: hidden;
@@ -360,8 +361,8 @@ main {
   padding: 0;
 }
 
-h1 { margin: 0 0 20px; font-size: 26px; line-height: 1.18; }
-h2 { margin: 0 0 10px; font-size: 20px; }
+h1 { margin: 0 0 16px; font-size: 16px; line-height: 1.35; }
+h2 { margin: 0 0 10px; font-size: 15px; line-height: 1.35; }
 p { margin: 0; color: var(--muted); }
 
 .panel, .table-panel {
@@ -418,7 +419,7 @@ p { margin: 0; color: var(--muted); }
 .metric-card strong {
   display: block;
   color: var(--text);
-  font-size: 25px;
+  font-size: 16px;
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
@@ -1002,7 +1003,7 @@ p { margin: 0; color: var(--muted); }
 }
 
 .health-ring strong {
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .health-layout ul {
@@ -1053,7 +1054,7 @@ p { margin: 0; color: var(--muted); }
   margin-bottom: 18px;
 }
 
-.dashboard-head p { font-size: 17px; font-weight: 650; }
+.dashboard-head p { font-size: 15px; font-weight: 650; }
 .create-job { width: 100%; min-height: 42px; }
 
 .home-actions {
@@ -1078,7 +1079,7 @@ p { margin: 0; color: var(--muted); }
 .home-action-card strong {
   display: block;
   margin-bottom: 4px;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .home-action-card small { color: var(--muted); }
@@ -1502,7 +1503,7 @@ th {
 .provider-option strong {
   display: block;
   margin: 0 0 4px;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .destination-add small,
@@ -1630,7 +1631,7 @@ button.danger-icon-button:not(:disabled):hover {
 
 .confirm-card h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .confirm-card p {
@@ -2116,12 +2117,12 @@ button.danger-confirm:not(:disabled):active {
 
 .about-hero h1 {
   margin-bottom: 12px;
-  font-size: 34px;
+  font-size: 16px;
 }
 
 .about-hero p {
   max-width: 720px;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.75;
 }
 
@@ -2137,7 +2138,7 @@ button.danger-confirm:not(:disabled):active {
 }
 
 .about-version strong {
-  font-size: 22px;
+  font-size: 16px;
 }
 
 .about-version small {
@@ -2259,7 +2260,7 @@ button.danger-confirm:not(:disabled):active {
   }
 
   .brand-name {
-    font-size: 19px;
+    font-size: 16px;
   }
 
   .side-nav {
@@ -2400,11 +2401,11 @@ button.danger-confirm:not(:disabled):active {
   }
 
   h1 {
-    font-size: 24px;
+    font-size: 16px;
   }
 
   h2 {
-    font-size: 19px;
+    font-size: 15px;
   }
 
   .panel,
@@ -2523,7 +2524,7 @@ button.danger-confirm:not(:disabled):active {
   }
 
   .about-hero h1 {
-    font-size: 28px;
+    font-size: 16px;
   }
 
   .about-actions .button {
@@ -2665,7 +2666,7 @@ button.danger-confirm:not(:disabled):active {
   .side-nav a {
     min-height: 34px;
     padding: 7px 10px;
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .nav-icon {
@@ -2731,7 +2732,7 @@ button.danger-confirm:not(:disabled):active {
   }
 
   .about-hero h1 {
-    font-size: 25px;
+    font-size: 16px;
   }
 
   .about-version {
