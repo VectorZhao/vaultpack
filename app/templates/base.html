@@ -59,7 +59,7 @@
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 5v6h6"></path><path d="M12 8v5l3 2"></path></svg>
             恢复
           </a>
-          <a class="{{ 'active' if request.endpoint in ['nodes', 'nodes_rotate_enrollment_token'] else '' }}" href="{{ url_for('nodes') }}">
+          <a class="desktop-nav-link {{ 'active' if request.endpoint in ['nodes', 'nodes_rotate_enrollment_token'] else '' }}" href="{{ url_for('nodes') }}">
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="7" rx="2"></rect><rect x="14" y="4" width="7" height="7" rx="2"></rect><rect x="8.5" y="15" width="7" height="7" rx="2"></rect><path d="M10 8h4"></path><path d="M12 11v4"></path></svg>
             节点
           </a>
@@ -75,7 +75,7 @@
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 0 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 0 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 0 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2a2 2 0 0 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z"></path></svg>
             设置
           </a>
-          <a class="mobile-more-link {{ 'active' if request.endpoint in ['more', 'restore', 'runs', 'account', 'account_username', 'account_password', 'account_totp_enable', 'account_totp_disable', 'about'] else '' }}" href="{{ url_for('more') }}">
+          <a class="mobile-more-link {{ 'active' if request.endpoint in ['more', 'nodes', 'nodes_rotate_enrollment_token', 'restore', 'runs', 'account', 'account_username', 'account_password', 'account_totp_enable', 'account_totp_disable', 'about'] else '' }}" href="{{ url_for('more') }}">
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01"></path><path d="M12 12h.01"></path><path d="M19 12h.01"></path></svg>
             更多
           </a>

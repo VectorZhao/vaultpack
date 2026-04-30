@@ -2,6 +2,10 @@
 {% block content %}
 <section class="more-page">
   <div class="more-grid">
+    <a class="more-card" href="{{ url_for('nodes') }}">
+      <span class="more-icon"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.8"></rect><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.8"></rect><rect x="8.75" y="13.5" width="6.5" height="6.5" rx="1.8"></rect><path d="M10.5 7.25h3"></path><path d="M12 10.5v3"></path></svg></span>
+      <span>节点</span>
+    </a>
     <a class="more-card" href="{{ url_for('restore') }}">
       <span class="more-icon"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 5v6h6"></path><path d="M12 8v5l3 2"></path></svg></span>
       <span>恢复</span>

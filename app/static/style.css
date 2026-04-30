@@ -962,8 +962,8 @@ p { margin: 0; color: var(--muted); }
 }
 
 .nodes-console .command-help {
-  gap: 9px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
 .nodes-console .command-help > strong {
@@ -979,7 +979,7 @@ p { margin: 0; color: var(--muted); }
 }
 
 .nodes-console .copy-command {
-  padding: 11px 12px;
+  padding: 10px 12px;
 }
 
 .nodes-console .copy-command code {
@@ -1138,7 +1138,7 @@ p { margin: 0; color: var(--muted); }
 .more-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .more-card,
@@ -2997,19 +2997,22 @@ button.danger-confirm:not(:disabled):active {
 
   .side-nav {
     position: fixed;
-    left: max(24px, calc((100vw - 520px) / 2 + 24px));
-    right: max(24px, calc((100vw - 520px) / 2 + 24px));
+    left: 50%;
+    right: auto;
     bottom: calc(12px + env(safe-area-inset-bottom));
     z-index: 70;
     display: flex;
-    gap: 6px;
+    width: min(322px, calc(100vw - 48px));
+    height: 64px;
+    gap: 0;
     margin: 0;
-    padding: 6px;
-    overflow-x: auto;
+    padding: 4px;
+    overflow: hidden;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
     border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
-    border-radius: 34px;
+    border-radius: 999px;
+    transform: translateX(-50%);
     background:
       linear-gradient(135deg, color-mix(in srgb, var(--panel) 82%, transparent), color-mix(in srgb, var(--soft) 74%, transparent));
     box-shadow:
@@ -3033,18 +3036,19 @@ button.danger-confirm:not(:disabled):active {
 
   .side-nav a,
   .side-nav .side-logout {
-    flex: initial;
-    min-width: 64px;
-    min-height: 54px;
+    width: auto;
+    height: 56px;
+    min-width: 0;
+    min-height: 56px;
     flex: 1 1 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 4px;
-    padding: 7px 9px;
+    padding: 6px 4px;
     border: 1px solid transparent;
-    border-radius: 28px;
+    border-radius: 999px;
     font-size: 11px;
     font-weight: 760;
     scroll-snap-align: start;
@@ -3053,6 +3057,10 @@ button.danger-confirm:not(:disabled):active {
   }
 
   .side-nav a[href*="/restore"] {
+    display: none;
+  }
+
+  .side-nav a[href*="/nodes"] {
     display: none;
   }
 
@@ -3438,13 +3446,13 @@ button.danger-confirm:not(:disabled):active {
 
   .more-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
   }
 
   .more-card,
   .more-form button {
-    min-height: 66px;
-    padding: 12px 14px;
+    min-height: 58px;
+    padding: 10px 14px;
   }
 
   .security-badge {
@@ -3577,8 +3585,23 @@ button.danger-confirm:not(:disabled):active {
     font-size: 13px;
   }
 
+  .nodes-console {
+    gap: 10px;
+  }
+
+  .nodes-console .command-help {
+    gap: 7px;
+    margin-bottom: 4px;
+    padding-bottom: 10px;
+  }
+
+  .nodes-console .command-help p {
+    margin-bottom: 0;
+  }
+
   .copy-command {
     border-radius: 18px;
+    padding-bottom: 10px;
   }
 
   .copy-command code {
@@ -3623,7 +3646,7 @@ button.danger-confirm:not(:disabled):active {
 
 @media (max-width: 420px) {
   .side-nav a {
-    font-size: 13px;
+    font-size: 11px;
   }
 
   .brand-name,
