@@ -220,6 +220,55 @@
     })();
 
     (() => {
+      const nav = document.querySelector(".side-nav");
+      if (!nav) return;
+      const mobileDock = window.matchMedia("(max-width: 760px)");
+
+      const visibleLinks = () => {
+        return Array.from(nav.querySelectorAll("a")).filter((link) => {
+          return getComputedStyle(link).display !== "none" && link.offsetWidth > 0;
+        });
+      };
+
+      const placeIndicator = (link, immediate = false) => {
+        if (!link) return;
+        const navRect = nav.getBoundingClientRect();
+        const linkRect = link.getBoundingClientRect();
+        nav.style.setProperty("--dock-x", `${linkRect.left - navRect.left}px`);
+        nav.style.setProperty("--dock-w", `${linkRect.width}px`);
+        nav.classList.toggle("dock-ready", !immediate);
+      };
+
+      const activeLink = () => nav.querySelector("a.active");
+      const syncIndicator = () => {
+        if (!mobileDock.matches) return;
+        placeIndicator(activeLink() || visibleLinks()[0], true);
+      };
+      requestAnimationFrame(syncIndicator);
+      window.addEventListener("resize", syncIndicator);
+      if (mobileDock.addEventListener) mobileDock.addEventListener("change", syncIndicator);
+
+      nav.addEventListener("click", (event) => {
+        if (!mobileDock.matches) return;
+        const link = event.target.closest("a");
+        if (!link || !nav.contains(link) || getComputedStyle(link).display === "none") return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target) return;
+        const targetUrl = new URL(link.href, window.location.href);
+        if (targetUrl.href === window.location.href) {
+          placeIndicator(link);
+          return;
+        }
+        event.preventDefault();
+        nav.querySelectorAll("a.active").forEach((item) => item.classList.remove("active"));
+        link.classList.add("active");
+        placeIndicator(link);
+        window.setTimeout(() => {
+          window.location.href = targetUrl.href;
+        }, 170);
+      });
+    })();
+
+    (() => {
       const menus = document.querySelectorAll(".more-menu");
       const closeOtherMenus = (activeMenu) => {
         menus.forEach((menu) => {

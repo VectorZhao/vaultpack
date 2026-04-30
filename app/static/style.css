@@ -1606,6 +1606,10 @@ th {
   font-weight: 650;
 }
 
+.copy-state:empty {
+  display: none;
+}
+
 .destination-page {
   width: min(668px, 100%);
   margin: 36px auto;
@@ -2996,12 +3000,15 @@ button.danger-confirm:not(:disabled):active {
   }
 
   .side-nav {
+    --dock-x: 4px;
+    --dock-w: calc((100% - 8px) / 4);
     position: fixed;
     left: 50%;
     right: auto;
     bottom: calc(12px + env(safe-area-inset-bottom));
     z-index: 70;
     display: flex;
+    align-items: center;
     width: min(322px, calc(100vw - 48px));
     height: 64px;
     gap: 0;
@@ -3014,7 +3021,7 @@ button.danger-confirm:not(:disabled):active {
     border-radius: 999px;
     transform: translateX(-50%);
     background:
-      linear-gradient(135deg, color-mix(in srgb, var(--panel) 82%, transparent), color-mix(in srgb, var(--soft) 74%, transparent));
+      linear-gradient(135deg, color-mix(in srgb, var(--panel) 54%, transparent), color-mix(in srgb, var(--soft) 38%, transparent));
     box-shadow:
       0 18px 48px rgba(15, 23, 42, 0.18),
       inset 0 1px 0 color-mix(in srgb, #fff 52%, transparent);
@@ -3022,9 +3029,36 @@ button.danger-confirm:not(:disabled):active {
     -webkit-backdrop-filter: blur(22px) saturate(1.35);
   }
 
+  .side-nav::before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 0;
+    width: var(--dock-w);
+    height: 54px;
+    border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
+    border-radius: 999px;
+    background:
+      radial-gradient(circle at 30% 20%, color-mix(in srgb, #fff 32%, transparent), transparent 38%),
+      color-mix(in srgb, var(--primary) 12%, var(--panel));
+    box-shadow:
+      0 8px 18px color-mix(in srgb, var(--primary) 12%, transparent),
+      inset 0 1px 0 color-mix(in srgb, #fff 46%, transparent);
+    transform: translate3d(var(--dock-x), 0, 0);
+    transition:
+      transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+      width 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  .side-nav:not(.dock-ready)::before {
+    transition: none;
+  }
+
   :root[data-theme="dark"] .side-nav {
     background:
-      linear-gradient(135deg, color-mix(in srgb, var(--panel) 76%, transparent), color-mix(in srgb, var(--soft) 62%, transparent));
+      linear-gradient(135deg, color-mix(in srgb, var(--panel) 38%, transparent), color-mix(in srgb, var(--soft) 26%, transparent));
     box-shadow:
       0 20px 54px rgba(0, 0, 0, 0.38),
       inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -3036,10 +3070,12 @@ button.danger-confirm:not(:disabled):active {
 
   .side-nav a,
   .side-nav .side-logout {
+    position: relative;
+    z-index: 1;
     width: auto;
-    height: 56px;
+    height: 54px;
     min-width: 0;
-    min-height: 56px;
+    min-height: 54px;
     flex: 1 1 0;
     display: flex;
     flex-direction: column;
@@ -3091,11 +3127,9 @@ button.danger-confirm:not(:disabled):active {
 
   .side-nav a.active {
     color: var(--primary);
-    border-color: color-mix(in srgb, var(--primary) 24%, transparent);
-    background: color-mix(in srgb, var(--primary) 12%, var(--panel));
-    box-shadow:
-      0 8px 18px color-mix(in srgb, var(--primary) 12%, transparent),
-      inset 0 1px 0 color-mix(in srgb, #fff 46%, transparent);
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
   }
 
   .nav-icon {
@@ -3586,13 +3620,13 @@ button.danger-confirm:not(:disabled):active {
   }
 
   .nodes-console {
-    gap: 10px;
+    gap: 7px;
   }
 
   .nodes-console .command-help {
-    gap: 7px;
-    margin-bottom: 4px;
-    padding-bottom: 10px;
+    gap: 6px;
+    margin-bottom: 0;
+    padding-bottom: 9px;
   }
 
   .nodes-console .command-help p {
@@ -3601,7 +3635,7 @@ button.danger-confirm:not(:disabled):active {
 
   .copy-command {
     border-radius: 18px;
-    padding-bottom: 10px;
+    padding-bottom: 9px;
   }
 
   .copy-command code {
