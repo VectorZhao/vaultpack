@@ -1,12 +1,12 @@
-const CACHE_VERSION = "vaultpack-pwa-v2";
+const CACHE_VERSION = "vaultpack-pwa-v3";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
 const STATIC_ASSETS = [
   "/static/style.css",
   "/static/favicon.png",
-  "/static/apple-touch-icon.png",
-  "/static/icon-192.png",
-  "/static/icon-512.png",
+  "/static/vaultpack-icon-180.png",
+  "/static/vaultpack-icon-192.png",
+  "/static/vaultpack-icon-512.png",
   "/static/manifest.webmanifest"
 ];
 
@@ -40,7 +40,12 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (url.pathname.startsWith("/static/") || url.pathname === "/manifest.webmanifest") {
+  if (url.pathname === "/static/manifest.webmanifest" || url.pathname === "/manifest.webmanifest") {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  if (url.pathname.startsWith("/static/")) {
     event.respondWith(cacheFirst(request));
     return;
   }
