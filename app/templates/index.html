@@ -70,6 +70,7 @@
           <a class="button primary" href="{{ url_for('job_new') }}">+ 新建任务</a>
         </div>
       </div>
+      {% set hide_next_run = true %}
       {% include "_jobs_table.html" %}
     </div>
   </section>

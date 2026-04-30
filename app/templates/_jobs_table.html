@@ -1,5 +1,6 @@
+{% set hide_next_run = hide_next_run|default(false) %}
 <div class="table-shell dashboard-table-shell">
-  <table class="dashboard-table">
+  <table class="dashboard-table {{ 'no-next-run' if hide_next_run else '' }}">
     <thead>
       <tr>
         <th>任务名称</th>
@@ -10,7 +11,9 @@
         <th>保留策略</th>
         <th>状态</th>
         <th>最近运行</th>
-        <th>下一次运行</th>
+        {% if not hide_next_run %}
+          <th>下一次运行</th>
+        {% endif %}
         <th>操作</th>
       </tr>
     </thead>
@@ -70,9 +73,11 @@
             <span>{{ job.last_run_at|time }}</span>
             {% if job.last_message %}<small class="muted-line">{{ job.last_message }}</small>{% endif %}
           </td>
-          <td data-label="下一次运行">
-            <span>{{ job.next_run_at|time if job.enabled else "已停用" }}</span>
-          </td>
+          {% if not hide_next_run %}
+            <td data-label="下一次运行">
+              <span>{{ job.next_run_at|time if job.enabled else "已停用" }}</span>
+            </td>
+          {% endif %}
           <td class="job-actions" data-label="操作">
             <div class="task-actions">
               <form method="post" action="{{ url_for('job_run', job_id=job.id) }}">
@@ -107,7 +112,7 @@
           </td>
         </tr>
       {% else %}
-        <tr><td colspan="10" class="empty">还没有备份任务。</td></tr>
+        <tr><td colspan="{{ 9 if hide_next_run else 10 }}" class="empty">还没有备份任务。</td></tr>
       {% endfor %}
     </tbody>
   </table>
