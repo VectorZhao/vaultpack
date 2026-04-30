@@ -235,6 +235,10 @@ def create_app():
             action_url=url_for("index"),
         )
 
+    @app.get("/more")
+    def more():
+        return render_template("more.html")
+
     @app.get("/about")
     def about():
         return render_template("about.html")

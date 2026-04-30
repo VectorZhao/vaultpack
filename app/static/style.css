@@ -64,7 +64,6 @@ a { color: inherit; text-decoration: none; }
   min-height: 100dvh;
   display: grid;
   grid-template-columns: 266px minmax(0, 1fr);
-  padding-top: env(safe-area-inset-top);
   padding-right: env(safe-area-inset-right);
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
@@ -148,6 +147,10 @@ a { color: inherit; text-decoration: none; }
   display: none;
 }
 
+.mobile-more-link {
+  display: none;
+}
+
 .side-nav a,
 .sidebar-footer a,
 .side-logout,
@@ -164,7 +167,8 @@ a { color: inherit; text-decoration: none; }
 }
 
 .side-nav a.mobile-nav-extra,
-.side-nav .mobile-nav-form {
+.side-nav .mobile-nav-form,
+.side-nav a.mobile-more-link {
   display: none;
 }
 
@@ -1124,6 +1128,66 @@ p { margin: 0; color: var(--muted); }
 
 .quick-card a:hover {
   color: #0b63ff;
+}
+
+.more-page {
+  display: grid;
+  gap: 18px;
+}
+
+.more-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.more-card,
+.more-form button {
+  min-width: 0;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.more-icon {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.more-icon .nav-icon {
+  width: 19px;
+  height: 19px;
+  color: var(--primary);
+}
+
+.more-card span,
+.more-form span {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.more-form {
+  margin: 0;
+}
+
+.more-form button {
+  width: 100%;
+  cursor: pointer;
 }
 
 .dashboard-head {
@@ -2456,8 +2520,9 @@ button.danger-confirm:not(:disabled):active {
 
   .section-actions {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-content: stretch;
+    gap: 8px;
   }
 
   .section-actions .button {
@@ -2932,19 +2997,19 @@ button.danger-confirm:not(:disabled):active {
 
   .side-nav {
     position: fixed;
-    left: 12px;
-    right: 12px;
+    left: max(24px, calc((100vw - 520px) / 2 + 24px));
+    right: max(24px, calc((100vw - 520px) / 2 + 24px));
     bottom: calc(12px + env(safe-area-inset-bottom));
     z-index: 70;
     display: flex;
     gap: 6px;
     margin: 0;
-    padding: 8px;
+    padding: 6px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
     border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
-    border-radius: 24px;
+    border-radius: 34px;
     background:
       linear-gradient(135deg, color-mix(in srgb, var(--panel) 82%, transparent), color-mix(in srgb, var(--soft) 74%, transparent));
     box-shadow:
@@ -2971,7 +3036,7 @@ button.danger-confirm:not(:disabled):active {
     flex: initial;
     min-width: 64px;
     min-height: 54px;
-    flex: 0 0 auto;
+    flex: 1 1 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -2979,7 +3044,7 @@ button.danger-confirm:not(:disabled):active {
     gap: 4px;
     padding: 7px 9px;
     border: 1px solid transparent;
-    border-radius: 17px;
+    border-radius: 28px;
     font-size: 11px;
     font-weight: 760;
     scroll-snap-align: start;
@@ -2987,17 +3052,23 @@ button.danger-confirm:not(:disabled):active {
     background: transparent;
   }
 
-  .side-nav .mobile-nav-extra {
+  .side-nav a[href*="/restore"] {
+    display: none;
+  }
+
+  .side-nav a[href*="/runs"],
+  .side-nav a[href*="/account"] {
+    display: none;
+  }
+
+  .side-nav a.mobile-more-link {
     display: flex;
+    order: 100;
   }
 
-  .side-nav .mobile-nav-form {
-    flex: 0 0 auto;
-    margin: 0;
-  }
-
-  .side-nav .side-logout {
-    width: auto;
+  .side-nav a.mobile-more-link .nav-icon {
+    width: 20px;
+    height: 20px;
   }
 
   .brand-name,
@@ -3130,11 +3201,36 @@ button.danger-confirm:not(:disabled):active {
   .panel,
   .table-panel,
   .settings-card,
-  .about-card {
+  .about-card,
+  .help-box,
+  .notice,
+  .flash {
     width: 100%;
     min-width: 0;
     padding: 14px;
-    border-radius: 12px;
+    border-radius: 24px;
+  }
+
+  .metric-card,
+  .home-action-card,
+  .destination-add,
+  .destination-card,
+  .provider-option,
+  .health-card,
+  .info-card,
+  .quick-card,
+  .theme-option,
+  .more-card,
+  .more-form button {
+    border-radius: 22px;
+  }
+
+  input,
+  select,
+  textarea,
+  .button,
+  button {
+    border-radius: 14px;
   }
 
   .section-head {
@@ -3208,7 +3304,7 @@ button.danger-confirm:not(:disabled):active {
   tr {
     padding: 12px;
     border: 1px solid var(--line-soft);
-    border-radius: 12px;
+    border-radius: 22px;
     background: color-mix(in srgb, var(--soft) 72%, var(--panel));
   }
 
@@ -3225,7 +3321,7 @@ button.danger-confirm:not(:disabled):active {
     align-items: start;
     gap: 10px;
     padding: 9px 0;
-    border-bottom: 1px solid var(--line-soft);
+    border-bottom: 0;
     font-size: 13px;
     line-height: 1.35;
     overflow-wrap: anywhere;
@@ -3340,6 +3436,17 @@ button.danger-confirm:not(:disabled):active {
     gap: 10px;
   }
 
+  .more-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .more-card,
+  .more-form button {
+    min-height: 66px;
+    padding: 12px 14px;
+  }
+
   .security-badge {
     justify-self: start;
   }
@@ -3437,19 +3544,41 @@ button.danger-confirm:not(:disabled):active {
   .destination-card .button,
   .provider-option .choose-button {
     grid-column: 1 / -1;
-    width: 100%;
   }
 
   .destination-actions {
     display: grid;
-    grid-template-columns: 42px minmax(0, 1fr);
+    grid-template-columns: 44px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .destination-actions .icon-button {
+    width: 44px;
+    min-height: 44px;
+    border-radius: 14px;
+  }
+
+  .destination-actions .button,
+  .provider-option .choose-button {
+    width: 100%;
+  }
+
+  .destination-actions .button {
+    grid-column: auto;
   }
 
   .help-box,
   .notice,
   .flash {
     padding: 11px 12px;
+    border-radius: 24px;
     font-size: 13px;
+  }
+
+  .copy-command {
+    border-radius: 18px;
   }
 
   .copy-command code {
@@ -3511,6 +3640,10 @@ button.danger-confirm:not(:disabled):active {
   .task-actions,
   .tree-tools {
     grid-template-columns: 1fr;
+  }
+
+  .section-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   td,

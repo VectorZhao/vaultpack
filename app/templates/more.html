@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="more-page">
+  <div class="more-grid">
+    <a class="more-card" href="{{ url_for('restore') }}">
+      <span class="more-icon"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 5v6h6"></path><path d="M12 8v5l3 2"></path></svg></span>
+      <span>恢复</span>
+    </a>
+    <a class="more-card" href="{{ url_for('runs') }}">
+      <span class="more-icon"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path><path d="M8 5v14"></path></svg></span>
+      <span>运行记录</span>
+    </a>
+    <a class="more-card" href="{{ url_for('account') }}">
+      <span class="more-icon"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 0 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 0 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 0 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2a2 2 0 0 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z"></path></svg></span>
+      <span>设置</span>
+    </a>
+    <a class="more-card" href="{{ url_for('about') }}">
+      <span class="more-icon"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg></span>
+      <span>关于 vaultpack</span>
+    </a>
+    <a class="more-card" href="https://github.com/VectorZhao/vaultpack#readme" target="_blank" rel="noreferrer">
+      <span class="more-icon"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 3H20v18H6.5A2.5 2.5 0 0 1 4 18.5v-13A2.5 2.5 0 0 1 6.5 3Z"></path><path d="M8 7h8"></path><path d="M8 11h6"></path></svg></span>
+      <span>使用文档</span>
+    </a>
+    <form class="more-form" method="post" action="{{ url_for('logout') }}">
+      <button class="more-card" type="submit">
+        <span class="more-icon"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17 15 12l-5-5"></path><path d="M15 12H3"></path><path d="M14 4h4a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-4"></path></svg></span>
+        <span>退出登录</span>
+      </button>
+    </form>
+  </div>
+</section>
+{% endblock %}
