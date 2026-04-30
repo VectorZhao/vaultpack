@@ -95,6 +95,7 @@ def _handle_command(session, headers, command):
             return
         if command_type == "run_backup":
             run_id = payload["run_id"]
+            payload["job"].setdefault("node_name", _agent_name())
 
             def progress(current, total, label):
                 session.post(

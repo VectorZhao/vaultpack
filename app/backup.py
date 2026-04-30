@@ -1,11 +1,12 @@
 import json
+import re
 import shutil
 import tarfile
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
-from .config import SOURCE_ROOT, WORK_DIR
+from .config import APP_TIMEZONE, SOURCE_ROOT, WORK_DIR
 from .db import connect, utc_now_iso
 from .schedule import next_run_from_cron
 from .webdav import WebDAVClient, WebDAVConfig
@@ -108,7 +109,10 @@ def due_jobs():
 
 def run_job(job_id, run_id=None):
     with connect() as conn:
-        job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        job = conn.execute(
+            "SELECT jobs.*, nodes.name AS node_name FROM jobs LEFT JOIN nodes ON nodes.id = jobs.node_id WHERE jobs.id = ?",
+            (job_id,),
+        ).fetchone()
         cfg = None
         if job and job["destination_id"]:
             cfg = conn.execute("SELECT * FROM webdav_config WHERE id = ?", (job["destination_id"],)).fetchone()
@@ -142,7 +146,7 @@ def run_backup_payload(job, cfg, progress_callback=None):
     try:
         progress(0, 0, "正在扫描文件...")
         source_paths = parse_source_paths(job["source_path"])
-        archive_name = _archive_name(job["id"], job["name"])
+        archive_name = _archive_name(job["id"], job.get("node_name"))
         archive_path = WORK_DIR / archive_name
         WORK_DIR.mkdir(parents=True, exist_ok=True)
         _make_archive(source_paths, archive_path, progress)
@@ -237,6 +241,7 @@ def enqueue_agent_run(job_id, run_id=None):
             "job": {
                 "id": job["id"],
                 "name": job["name"],
+                "node_name": node["name"],
                 "source_path": job["source_path"],
                 "retention_count": job["retention_count"],
                 "cron_expr": job["cron_expr"],
@@ -260,10 +265,15 @@ def enqueue_agent_run(job_id, run_id=None):
         return run_id
 
 
-def _archive_name(job_id, name):
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    slug = "".join(ch if ch.isalnum() or ch in ("-", "_") else "-" for ch in name).strip("-") or "backup"
-    return f"job-{job_id}-{slug}-{stamp}.tar.gz"
+def _archive_name(job_id, node_name):
+    stamp = datetime.now(APP_TIMEZONE).strftime("%Y%m%d-%H%M")
+    node_slug = _filename_slug(node_name or "local")
+    return f"{node_slug}-j{job_id}-{stamp}.tar.gz"
+
+
+def _filename_slug(value):
+    slug = re.sub(r"[^A-Za-z0-9_-]+", "-", str(value or "").strip().lower())
+    return slug.strip("-") or "local"
 
 
 def _make_archive(source_paths, archive_path, progress_callback):
@@ -303,11 +313,29 @@ def _make_archive(source_paths, archive_path, progress_callback):
 
 
 def _apply_retention(client, job_id, retention_count):
-    prefix = f"job-{job_id}-"
-    backups = sorted(name for name in client.list_files() if name.startswith(prefix) and name.endswith(".tar.gz"))
+    legacy_prefix = f"job-{job_id}-"
+    new_pattern = re.compile(rf"^[A-Za-z0-9_-]+-j{re.escape(str(job_id))}-\d{{8}}-\d{{4}}\.tar\.gz$")
+    backups = sorted(
+        (
+            name
+            for name in client.list_files()
+            if name.endswith(".tar.gz") and (name.startswith(legacy_prefix) or new_pattern.match(name))
+        ),
+        key=_retention_sort_key,
+    )
     overflow = len(backups) - retention_count
     for name in backups[:max(0, overflow)]:
         client.delete(name)
+
+
+def _retention_sort_key(name):
+    new_match = re.search(r"-(\d{8})-(\d{4})\.tar\.gz$", name)
+    if new_match:
+        return f"{new_match.group(1)}{new_match.group(2)}00"
+    legacy_match = re.search(r"-(\d{8})T(\d{6})Z\.tar\.gz$", name)
+    if legacy_match:
+        return f"{legacy_match.group(1)}{legacy_match.group(2)}"
+    return name
 
 
 def _collect_archive_entries(source_paths):
