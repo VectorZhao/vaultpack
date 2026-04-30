@@ -1,4 +1,4 @@
-const CACHE_VERSION = "vaultpack-pwa-v1";
+const CACHE_VERSION = "vaultpack-pwa-v2";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
 const STATIC_ASSETS = [
@@ -35,6 +35,11 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
+  if (url.pathname === "/static/style.css") {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
   if (url.pathname.startsWith("/static/") || url.pathname === "/manifest.webmanifest") {
     event.respondWith(cacheFirst(request));
     return;
@@ -55,6 +60,21 @@ async function cacheFirst(request) {
     cache.put(request, response.clone());
   }
   return response;
+}
+
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(STATIC_CACHE);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    throw new Error("Network request failed and no cached response is available.");
+  }
 }
 
 async function networkOnlyPage(request) {
