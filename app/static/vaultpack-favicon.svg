@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="vaultpack">
+  <defs>
+    <linearGradient id="bg" x1="64" y1="52" x2="448" y2="460" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3B7CFF"/>
+      <stop offset="0.52" stop-color="#0AA9FF"/>
+      <stop offset="1" stop-color="#0DE3D3"/>
+    </linearGradient>
+    <linearGradient id="well" x1="256" y1="118" x2="256" y2="312" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6EF7FF"/>
+      <stop offset="0.46" stop-color="#16B9FF"/>
+      <stop offset="1" stop-color="#226BFF"/>
+    </linearGradient>
+    <linearGradient id="dial" x1="216" y1="292" x2="296" y2="372" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#DCEAFF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#063AA3" flood-opacity="0.32"/>
+    </filter>
+    <clipPath id="clip">
+      <rect x="24" y="24" width="464" height="464" rx="116"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#clip)">
+    <rect x="24" y="24" width="464" height="464" rx="116" fill="url(#bg)"/>
+    <circle cx="120" cy="112" r="168" fill="#7FEAFF" opacity="0.18"/>
+    <circle cx="440" cy="426" r="180" fill="#022DCD" opacity="0.18"/>
+    <rect x="42" y="42" width="428" height="428" rx="98" fill="none" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="10"/>
+    <g filter="url(#shadow)">
+      <ellipse cx="256" cy="154" rx="102" ry="30" fill="#7DF7FF"/>
+      <path d="M154 160C184 196 328 196 358 160L336 226C307 252 205 252 176 226Z" fill="url(#well)"/>
+      <path d="M178 232C209 254 303 254 334 232L314 292C289 310 223 310 198 292Z" fill="#186CFF" opacity="0.96"/>
+      <path d="M142 174L238 374C245 389 267 389 274 374L370 174" fill="none" stroke="#FFFFFF" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="256" cy="334" r="46" fill="#0C66EF" stroke="url(#dial)" stroke-width="15"/>
+      <circle cx="256" cy="334" r="17" fill="#8FF7FF"/>
+      <path d="M256 286v24M256 358v24M208 334h24M280 334h24M222 300l17 17M273 351l17 17M290 300l-17 17M239 351l-17 17" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>

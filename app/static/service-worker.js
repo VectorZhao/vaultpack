@@ -1,18 +1,27 @@
-const CACHE_VERSION = "vaultpack-pwa-v5";
+const CACHE_VERSION = "vaultpack-pwa-v8";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
 const STATIC_ASSETS = [
   "/static/style.css",
   "/static/favicon.png",
   "/static/favicon-dark.png",
+  "/static/vaultpack-favicon.svg",
+  "/static/vaultpack-favicon-dark.svg",
   "/static/vaultpack-icon.svg",
   "/static/vaultpack-icon-dark.svg",
+  "/static/vaultpack-icon-adaptive.svg",
   "/static/vaultpack-icon-180.png",
   "/static/vaultpack-icon-192.png",
   "/static/vaultpack-icon-512.png",
   "/static/vaultpack-icon-dark-180.png",
   "/static/vaultpack-icon-dark-192.png",
   "/static/vaultpack-icon-dark-512.png",
+  "/static/vaultpack-icon-adaptive-180.png",
+  "/static/vaultpack-icon-adaptive-192.png",
+  "/static/vaultpack-icon-adaptive-512.png",
+  "/static/apple-touch-icon.png",
+  "/static/icon-192.png",
+  "/static/icon-512.png",
   "/static/manifest.webmanifest"
 ];
 

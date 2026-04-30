@@ -58,7 +58,18 @@ def create_app():
     def require_login():
         if request.endpoint and request.endpoint.startswith("api_agent_"):
             return
-        if request.endpoint in {"login", "login_post", "setup", "setup_post", "static", "web_manifest", "service_worker"}:
+        public_endpoints = {
+            "login",
+            "login_post",
+            "setup",
+            "setup_post",
+            "static",
+            "web_manifest",
+            "service_worker",
+            "apple_touch_icon",
+            "apple_touch_icon_precomposed",
+        }
+        if request.endpoint in public_endpoints:
             return
         if not _has_user() and request.endpoint != "setup":
             return redirect(url_for("setup"))
@@ -75,6 +86,14 @@ def create_app():
         response.headers["Cache-Control"] = "no-cache"
         response.headers["Service-Worker-Allowed"] = "/"
         return response
+
+    @app.get("/apple-touch-icon.png")
+    def apple_touch_icon():
+        return send_from_directory(app.static_folder, "vaultpack-icon-adaptive-180.png", mimetype="image/png")
+
+    @app.get("/apple-touch-icon-precomposed.png")
+    def apple_touch_icon_precomposed():
+        return send_from_directory(app.static_folder, "vaultpack-icon-adaptive-180.png", mimetype="image/png")
 
     @app.get("/setup")
     def setup():

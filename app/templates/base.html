@@ -10,9 +10,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#3378ff">
   <title>vaultpack</title>
-  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='vaultpack-icon.svg') }}" data-icon-theme data-light-href="{{ url_for('static', filename='vaultpack-icon.svg') }}" data-dark-href="{{ url_for('static', filename='vaultpack-icon-dark.svg') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='vaultpack-favicon.svg') }}" data-icon-theme data-light-href="{{ url_for('static', filename='vaultpack-favicon.svg') }}" data-dark-href="{{ url_for('static', filename='vaultpack-favicon-dark.svg') }}">
   <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon.png') }}" data-icon-theme data-light-href="{{ url_for('static', filename='favicon.png') }}" data-dark-href="{{ url_for('static', filename='favicon-dark.png') }}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='vaultpack-icon-180.png') }}" data-icon-theme data-light-href="{{ url_for('static', filename='vaultpack-icon-180.png') }}" data-dark-href="{{ url_for('static', filename='vaultpack-icon-dark-180.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('apple_touch_icon') }}">
   <link rel="manifest" href="{{ url_for('web_manifest') }}">
   <script>
     (() => {
@@ -226,30 +226,6 @@
       if (!nav) return;
       const mobileDock = window.matchMedia("(max-width: 760px)");
 
-      const visibleLinks = () => {
-        return Array.from(nav.querySelectorAll("a")).filter((link) => {
-          return getComputedStyle(link).display !== "none" && link.offsetWidth > 0;
-        });
-      };
-
-      const placeIndicator = (link, immediate = false) => {
-        if (!link) return;
-        const navRect = nav.getBoundingClientRect();
-        const linkRect = link.getBoundingClientRect();
-        nav.style.setProperty("--dock-x", `${linkRect.left - navRect.left}px`);
-        nav.style.setProperty("--dock-w", `${linkRect.width}px`);
-        nav.classList.toggle("dock-ready", !immediate);
-      };
-
-      const activeLink = () => nav.querySelector("a.active");
-      const syncIndicator = () => {
-        if (!mobileDock.matches) return;
-        placeIndicator(activeLink() || visibleLinks()[0], true);
-      };
-      requestAnimationFrame(syncIndicator);
-      window.addEventListener("resize", syncIndicator);
-      if (mobileDock.addEventListener) mobileDock.addEventListener("change", syncIndicator);
-
       nav.addEventListener("click", (event) => {
         if (!mobileDock.matches) return;
         const link = event.target.closest("a");
@@ -257,16 +233,14 @@
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target) return;
         const targetUrl = new URL(link.href, window.location.href);
         if (targetUrl.href === window.location.href) {
-          placeIndicator(link);
           return;
         }
         event.preventDefault();
         nav.querySelectorAll("a.active").forEach((item) => item.classList.remove("active"));
         link.classList.add("active");
-        placeIndicator(link);
-        window.setTimeout(() => {
+        requestAnimationFrame(() => {
           window.location.href = targetUrl.href;
-        }, 170);
+        });
       });
     })();
 

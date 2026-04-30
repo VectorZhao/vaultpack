@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="vaultpack">
+  <defs>
+    <linearGradient id="vStroke" x1="132" y1="128" x2="382" y2="392" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FCFF"/>
+      <stop offset="0.44" stop-color="#EAF6FF"/>
+      <stop offset="1" stop-color="#BDEAFF"/>
+    </linearGradient>
+    <linearGradient id="vEdge" x1="132" y1="140" x2="380" y2="392" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2F7DFF"/>
+      <stop offset="0.58" stop-color="#08B7FF"/>
+      <stop offset="1" stop-color="#25F1D2"/>
+    </linearGradient>
+    <linearGradient id="well" x1="256" y1="124" x2="256" y2="306" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6FF7FF"/>
+      <stop offset="0.52" stop-color="#10AFFF"/>
+      <stop offset="1" stop-color="#3868FF"/>
+    </linearGradient>
+    <linearGradient id="dial" x1="214" y1="292" x2="300" y2="374" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1A7CFF"/>
+      <stop offset="1" stop-color="#05D2F2"/>
+    </linearGradient>
+    <filter id="softShadow" x="-28%" y="-28%" width="156%" height="166%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#00112A" flood-opacity="0.34"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#13C8FF" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <ellipse cx="256" cy="156" rx="106" ry="31" fill="#72F6FF"/>
+    <path d="M150 162C182 199 330 199 362 162L340 228C310 254 202 254 172 228Z" fill="url(#well)"/>
+    <path d="M174 234C207 257 305 257 338 234L318 294C292 314 220 314 194 294Z" fill="#246CFF" opacity="0.96"/>
+
+    <path d="M139 174L237 378C244 394 268 394 275 378L373 174" fill="none" stroke="url(#vEdge)" stroke-width="78" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>
+    <path d="M139 174L237 378C244 394 268 394 275 378L373 174" fill="none" stroke="url(#vStroke)" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <circle cx="256" cy="336" r="50" fill="url(#dial)" stroke="#F8FCFF" stroke-width="13"/>
+    <circle cx="256" cy="336" r="17" fill="#8AF8FF"/>
+    <path d="M256 289v24M256 359v24M209 336h24M279 336h24M222 302l17 17M273 353l17 17M290 302l-17 17M239 353l-17 17" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+  </g>
+</svg>
