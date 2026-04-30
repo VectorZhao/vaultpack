@@ -10,9 +10,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#3378ff">
   <title>vaultpack</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon.png') }}">
-  <link rel="icon" type="image/png" sizes="32x32" media="(prefers-color-scheme: dark)" href="{{ url_for('static', filename='favicon-dark.png') }}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='vaultpack-icon-180.png') }}" data-light-href="{{ url_for('static', filename='vaultpack-icon-180.png') }}" data-dark-href="{{ url_for('static', filename='vaultpack-icon-dark-180.png') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='vaultpack-icon.svg') }}" data-icon-theme data-light-href="{{ url_for('static', filename='vaultpack-icon.svg') }}" data-dark-href="{{ url_for('static', filename='vaultpack-icon-dark.svg') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon.png') }}" data-icon-theme data-light-href="{{ url_for('static', filename='favicon.png') }}" data-dark-href="{{ url_for('static', filename='favicon-dark.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='vaultpack-icon-180.png') }}" data-icon-theme data-light-href="{{ url_for('static', filename='vaultpack-icon-180.png') }}" data-dark-href="{{ url_for('static', filename='vaultpack-icon-dark-180.png') }}">
   <link rel="manifest" href="{{ url_for('web_manifest') }}">
   <script>
     (() => {
@@ -27,9 +27,10 @@
       const themeColor = theme === "dark" ? "#0d1118" : "#3378ff";
       document.querySelector("meta[name='theme-color']")?.setAttribute("content", themeColor);
       document.querySelector("meta[name='apple-mobile-web-app-status-bar-style']")?.setAttribute("content", theme === "dark" ? "black-translucent" : "default");
-      const appleIcon = document.querySelector("link[rel='apple-touch-icon']");
-      const appleIconHref = theme === "dark" ? appleIcon?.dataset.darkHref : appleIcon?.dataset.lightHref;
-      if (appleIcon && appleIconHref) appleIcon.setAttribute("href", appleIconHref);
+      document.querySelectorAll("[data-icon-theme]").forEach((icon) => {
+        const iconHref = theme === "dark" ? icon.dataset.darkHref : icon.dataset.lightHref;
+        if (iconHref) icon.setAttribute("href", iconHref);
+      });
     })();
   </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -183,9 +184,10 @@
         const themeColor = nextTheme === "dark" ? "#0d1118" : "#3378ff";
         document.querySelector("meta[name='theme-color']")?.setAttribute("content", themeColor);
         document.querySelector("meta[name='apple-mobile-web-app-status-bar-style']")?.setAttribute("content", nextTheme === "dark" ? "black-translucent" : "default");
-        const appleIcon = document.querySelector("link[rel='apple-touch-icon']");
-        const appleIconHref = nextTheme === "dark" ? appleIcon?.dataset.darkHref : appleIcon?.dataset.lightHref;
-        if (appleIcon && appleIconHref) appleIcon.setAttribute("href", appleIconHref);
+        document.querySelectorAll("[data-icon-theme]").forEach((icon) => {
+          const iconHref = nextTheme === "dark" ? icon.dataset.darkHref : icon.dataset.lightHref;
+          if (iconHref) icon.setAttribute("href", iconHref);
+        });
         if (persist) {
           localStorage.setItem(modeKey, nextMode);
           localStorage.removeItem(legacyKey);
