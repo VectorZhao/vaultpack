@@ -1,12 +1,16 @@
-const CACHE_VERSION = "vaultpack-pwa-v3";
+const CACHE_VERSION = "vaultpack-pwa-v4";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
 const STATIC_ASSETS = [
   "/static/style.css",
   "/static/favicon.png",
+  "/static/favicon-dark.png",
   "/static/vaultpack-icon-180.png",
   "/static/vaultpack-icon-192.png",
   "/static/vaultpack-icon-512.png",
+  "/static/vaultpack-icon-dark-180.png",
+  "/static/vaultpack-icon-dark-192.png",
+  "/static/vaultpack-icon-dark-512.png",
   "/static/manifest.webmanifest"
 ];
 

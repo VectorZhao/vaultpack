@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="application-name" content="vaultpack">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="vaultpack">
@@ -11,7 +11,8 @@
   <meta name="theme-color" content="#3378ff">
   <title>vaultpack</title>
   <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon.png') }}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='vaultpack-icon-180.png') }}">
+  <link rel="icon" type="image/png" sizes="32x32" media="(prefers-color-scheme: dark)" href="{{ url_for('static', filename='favicon-dark.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='vaultpack-icon-180.png') }}" data-light-href="{{ url_for('static', filename='vaultpack-icon-180.png') }}" data-dark-href="{{ url_for('static', filename='vaultpack-icon-dark-180.png') }}">
   <link rel="manifest" href="{{ url_for('web_manifest') }}">
   <script>
     (() => {
@@ -23,7 +24,12 @@
       const theme = mode === "auto" ? (systemDark ? "dark" : "light") : mode;
       document.documentElement.dataset.themeMode = mode;
       document.documentElement.dataset.theme = theme;
-      document.querySelector("meta[name='theme-color']")?.setAttribute("content", theme === "dark" ? "#0d1118" : "#3378ff");
+      const themeColor = theme === "dark" ? "#0d1118" : "#3378ff";
+      document.querySelector("meta[name='theme-color']")?.setAttribute("content", themeColor);
+      document.querySelector("meta[name='apple-mobile-web-app-status-bar-style']")?.setAttribute("content", theme === "dark" ? "black-translucent" : "default");
+      const appleIcon = document.querySelector("link[rel='apple-touch-icon']");
+      const appleIconHref = theme === "dark" ? appleIcon?.dataset.darkHref : appleIcon?.dataset.lightHref;
+      if (appleIcon && appleIconHref) appleIcon.setAttribute("href", appleIconHref);
     })();
   </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -69,6 +75,20 @@
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 0 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 0 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 0 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2a2 2 0 0 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z"></path></svg>
             设置
           </a>
+          <a class="mobile-nav-extra {{ 'active' if request.endpoint == 'about' else '' }}" href="{{ url_for('about') }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg>
+            关于
+          </a>
+          <a class="mobile-nav-extra" href="https://github.com/VectorZhao/vaultpack#readme" target="_blank" rel="noreferrer">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 3H20v18H6.5A2.5 2.5 0 0 1 4 18.5v-13A2.5 2.5 0 0 1 6.5 3Z"></path><path d="M8 7h8"></path><path d="M8 11h6"></path></svg>
+            文档
+          </a>
+          <form class="mobile-nav-extra mobile-nav-form" method="post" action="{{ url_for('logout') }}">
+            <button class="side-logout" type="submit">
+              <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17 15 12l-5-5"></path><path d="M15 12H3"></path><path d="M14 4h4a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-4"></path></svg>
+              退出
+            </button>
+          </form>
         </nav>
         <div class="sidebar-footer">
           <div class="node-id">
@@ -170,7 +190,12 @@
         const nextTheme = nextMode === "auto" ? systemTheme() : nextMode;
         root.dataset.themeMode = nextMode;
         root.dataset.theme = nextTheme;
-        document.querySelector("meta[name='theme-color']")?.setAttribute("content", nextTheme === "dark" ? "#0d1118" : "#3378ff");
+        const themeColor = nextTheme === "dark" ? "#0d1118" : "#3378ff";
+        document.querySelector("meta[name='theme-color']")?.setAttribute("content", themeColor);
+        document.querySelector("meta[name='apple-mobile-web-app-status-bar-style']")?.setAttribute("content", nextTheme === "dark" ? "black-translucent" : "default");
+        const appleIcon = document.querySelector("link[rel='apple-touch-icon']");
+        const appleIconHref = nextTheme === "dark" ? appleIcon?.dataset.darkHref : appleIcon?.dataset.lightHref;
+        if (appleIcon && appleIconHref) appleIcon.setAttribute("href", appleIconHref);
         if (persist) {
           localStorage.setItem(modeKey, nextMode);
           localStorage.removeItem(legacyKey);
